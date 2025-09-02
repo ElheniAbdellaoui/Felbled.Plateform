@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon backend/server.js",
-    "build": "npm install && (cd ../frontend && npm install && npm run build || echo 'Frontend build skipped')",
+    "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend",
     "start": "nodemon backend/server.js"
   },
   "keywords": [],
