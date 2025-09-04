@@ -31,10 +31,10 @@ app.use("/api/v1/blog", blogRoute);
 app.use("/api/v1/comment", commentRoute);
 
 app.use(express.static(path.join(_dirname, "/frontend/dist")));
-// app.get("*", (_, res) => {
+//  app.get("*", (_, res) => {
 //   res.sendFile(path.resolve(_dirname, "frontend", "dist", "index.html"));
-// });
-// Connexion à MongoDB puis démarrage du serveur
+//  });
+//  Connexion à MongoDB puis démarrage du serveur
 const PORT = process.env.PORT || 3000;
 
 connectDB()

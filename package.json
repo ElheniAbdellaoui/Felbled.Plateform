@@ -1,12 +1,12 @@
 {
-  "name": "backend",
+  "name": "felbled-platform-root",
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "dev": "nodemon backend/server.js",
-    "build": "npm install && npm install --prefix ../frontend && npm run build --prefix ../frontend",
-    "start": "node server.js"
+    "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend",
+    "start": "nodemon backend/server.js"
   },
   "keywords": [],
   "author": "",
@@ -24,5 +24,6 @@
     "multer": "^2.0.2",
     "nodemon": "^3.1.10"
   },
-  "description": ""
+  "description": "Root package.json for Felbled Platform",
+  "devDependencies": {}
 }
