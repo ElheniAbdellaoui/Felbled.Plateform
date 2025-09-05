@@ -19,7 +19,7 @@ const Comments = () => {
   const getTotalComments = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/v1/comment/my-blogs/comments`,
+        `https://felblad-plateform.onrender.com/comment/my-blogs/comments`,
         { withCredentials: true }
       );
       if (res.data.success) {

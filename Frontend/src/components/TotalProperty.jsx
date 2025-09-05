@@ -14,7 +14,7 @@ const TotalProperty = () => {
   const getOwnBlog = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/v1/blog/get-own-blogs`,
+        `https://felblad-plateform.onrender.com/blog/get-own-blogs`,
         { withCredentials: true }
       );
       if (res.data.success) {
@@ -27,7 +27,7 @@ const TotalProperty = () => {
   const getTotalComments = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/v1/comment/my-blogs/comments`,
+        `https://felblad-plateform.onrender.com/comment/my-blogs/comments`,
         { withCredentials: true }
       );
       if (res.data.success) {
@@ -41,7 +41,7 @@ const TotalProperty = () => {
   const getTotalLikes = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:8000/api/v1/blog/my-blogs/likes`,
+        `https://felblad-plateform.onrender.com/blog/my-blogs/likes`,
         { withCredentials: true }
       );
       if (res.data.success) {

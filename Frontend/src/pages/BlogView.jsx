@@ -39,7 +39,7 @@ const BlogView = () => {
     try {
       const action = liked ? "dislike" : "like";
       const res = await axios.get(
-        `http://localhost:8000/api/v1/blog/${selectedBlog?._id}/${action}`,
+        `https://felblad-plateform.onrender.com/blog/${selectedBlog?._id}/${action}`,
         { withCredentials: true }
       );
       if (res.data.success) {
