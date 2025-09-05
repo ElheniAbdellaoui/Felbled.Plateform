@@ -14,7 +14,7 @@ const Blog = () => {
     const getAllPublsihedBlogs = async () => {
       try {
         const res = await axios.get(
-          `https://felblad-plateform.onrender.com/blog/get-published-blogs`,
+          `https://felblad-plateform.onrender.com/api/v1/blog/get-published-blogs`,
           { withCredentials: true }
         );
         if (res.data.success) {

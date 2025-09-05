@@ -77,7 +77,7 @@ const YourBlog = () => {
   const getOwnBlog = async () => {
     try {
       const res = await axios.get(
-        `https://felblad-plateform.onrender.com/blog/get-own-blogs`,
+        `https://felblad-plateform.onrender.com/api/v1/blog/get-own-blogs`,
         { withCredentials: true }
       );
       if (res.data.success) {
@@ -90,7 +90,7 @@ const YourBlog = () => {
   const deleteBlog = async (id) => {
     try {
       const res = await axios.delete(
-        `https://felblad-plateform.onrender.com/blog/delete/${id}`,
+        `https://felblad-plateform.onrender.com/api/v1/blog/delete/${id}`,
         { withCredentials: true }
       );
       if (res.data.success) {

@@ -56,7 +56,7 @@ const Navbar = () => {
   const logoutHandler = async (e) => {
     try {
       const res = await axios.get(
-        `https://felblad-plateform.onrender.com/user/logout`,
+        `https://felblad-plateform.onrender.com/api/v1/user/logout`,
         {
           withCredentials: true,
         }

@@ -73,7 +73,7 @@ const Profile = () => {
     try {
       setLoading(true);
       const res = await axios.put(
-        `https://felblad-plateform.onrender.com/user/profile/update`,
+        `https://felblad-plateform.onrender.com/api/v1/user/profile/update`,
         formData,
         {
           headers: {

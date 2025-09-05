@@ -45,7 +45,7 @@ const Signup = () => {
     try {
       dispatch(setLoading(true));
       const res = await axios.post(
-        "https://felblad-plateform.onrender.com/user/register",
+        "https://felblad-plateform.onrender.com/api/v1/user/register",
         user,
         {
           headers: { "Content-Type": "application/json" },

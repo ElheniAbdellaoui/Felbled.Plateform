@@ -44,7 +44,7 @@ const Login = () => {
     try {
       dispatch(setLoading(true));
       const res = await axios.post(
-        "https://felblad-plateform.onrender.com/user/login",
+        "https://felblad-plateform.onrender.com/api/v1/user/login",
         input,
         {
           headers: { "Content-Type": "application/json" },

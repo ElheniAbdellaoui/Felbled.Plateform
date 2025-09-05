@@ -7,7 +7,7 @@ const PopularAuthors = () => {
   const getAllUsers = async () => {
     try {
       const res = await axios.get(
-        `https://felblad-plateform.onrender.com/user/all-users`
+        `https://felblad-plateform.onrender.com/api/v1/user/all-users`
       );
       if (res.data.success) {
         setPopularUser(res.data.users);
