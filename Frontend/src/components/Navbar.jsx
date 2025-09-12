@@ -139,8 +139,8 @@ const Navbar = () => {
 
             {/* i18n */}
             <Select>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="" />
+              <SelectTrigger className="w-[20px]">
+                <SelectValue placeholder="en" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="english">en</SelectItem>
