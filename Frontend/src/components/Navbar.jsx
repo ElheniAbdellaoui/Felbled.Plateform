@@ -50,8 +50,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import i18n from "../i18n";
+import { useTranslation } from "react-i18next";
 
 const Navbar = () => {
+  const { t, i18n } = useTranslation();
   const { user } = useSelector((store) => store.auth);
   const { theme } = useSelector((store) => store.theme);
   const [searchTerm, setSearchTerm] = useState("");
@@ -59,6 +62,9 @@ const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   // const user = false;
+  const onChangeLang = (e) => {
+    i18n.changeLanguage(e.target.value);
+  };
 
   const logoutHandler = async (e) => {
     try {
@@ -122,13 +128,13 @@ const Navbar = () => {
         <nav className="flex md:gap-7 gap-4 items-center">
           <ul className="hidden md:flex gap-7 items-center text-xl font-semibold">
             <NavLink to={"/"} className="cursor-pointer">
-              <li>Investir</li>
+              <li>{t("Investir")}</li>
             </NavLink>
             <NavLink to={"/blogs"} className={`cursor-pointer`}>
-              <li>Blogs</li>
+              <li>{t("Blogs")}</li>
             </NavLink>
             <NavLink to={"/about"} className={`cursor-pointer`}>
-              <li>My Business</li>
+              <li>{t("My Business")}</li>
             </NavLink>
             {/* <NavLink to={'/write-blog'} className={`cursor-pointer`}><li>Write a Blog</li></NavLink> */}
           </ul>
@@ -138,16 +144,18 @@ const Navbar = () => {
             </Button>
 
             {/* i18n */}
-            <Select>
-              <SelectTrigger className="w-[20px]">
-                <SelectValue placeholder="en" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="english">en</SelectItem>
-                <SelectItem value="french">fr</SelectItem>
-                <SelectItem value="arabic">ar</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="d-flex">
+              <Select onChange={onChangeLang}>
+                <SelectTrigger className="w-[40px]">
+                  <SelectValue placeholder="en" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="english">en</SelectItem>
+                  <SelectItem value="french">fr</SelectItem>
+                  <SelectItem value="arabic">ar</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
             {user ? (
               <div className="ml-7 flex gap-3 items-center">
@@ -160,14 +168,14 @@ const Navbar = () => {
                     </Avatar>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-56 dark:bg-gray-800">
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuLabel>{t("My Account")}</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuGroup>
                       <DropdownMenuItem
                         onClick={() => navigate("/dashboard/profile")}
                       >
                         <User />
-                        <span>Profile</span>
+                        <span>{t("Profile")}</span>
                         <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                       </DropdownMenuItem>
                       <DropdownMenuItem
@@ -208,10 +216,10 @@ const Navbar = () => {
             ) : (
               <div className="ml-7 md:flex gap-2 ">
                 <Link to={"/login"}>
-                  <Button>Se Connecter</Button>
+                  <Button>{t("Se Connecter")}</Button>
                 </Link>
                 <Link className="hidden md:block" to={"/signup"}>
-                  <Button>Essayer Gratuitement</Button>
+                  <Button>{t("Essayer Gratuitement")}</Button>
                 </Link>
               </div>
             )}
