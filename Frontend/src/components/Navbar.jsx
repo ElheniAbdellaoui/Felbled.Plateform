@@ -129,6 +129,19 @@ const Navbar = () => {
             <Button onClick={() => dispatch(toggleTheme())} className="">
               {theme === "light" ? <FaMoon /> : <FaSun />}
             </Button>
+
+            {/* i18n */}
+            <Select>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Theme" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="light">en</SelectItem>
+                <SelectItem value="dark">fr</SelectItem>
+                <SelectItem value="system">ar</SelectItem>
+              </SelectContent>
+            </Select>
+
             {user ? (
               <div className="ml-7 flex gap-3 items-center">
                 {/* <Link to={'/profile'}> */}

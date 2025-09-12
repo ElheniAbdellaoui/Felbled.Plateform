@@ -8,6 +8,7 @@ import { Toaster } from "sonner";
 import ThemeProvider from "./components/ThemeProvider";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistStore } from "redux-persist";
+import "./i18n";
 
 const persistor = persistStore(store);
 createRoot(document.getElementById("root")).render(
