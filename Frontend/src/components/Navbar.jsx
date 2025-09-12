@@ -43,6 +43,13 @@ import { FaEdit, FaMoon, FaRegEdit, FaSun } from "react-icons/fa";
 import { toggleTheme } from "@/redux/themeSlice";
 import { LiaCommentSolid } from "react-icons/lia";
 import ResponsiveMenu from "./ResponsiveMenu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 const Navbar = () => {
   const { user } = useSelector((store) => store.auth);
