@@ -138,7 +138,7 @@ const Navbar = () => {
             </NavLink>
             {/* <NavLink to={'/write-blog'} className={`cursor-pointer`}><li>Write a Blog</li></NavLink> */}
           </ul>
-          <div className="d-flex">
+          <div style={{ justifyContent: "space-between" }}>
             <div className="flex">
               <Button onClick={() => dispatch(toggleTheme())} className="">
                 {theme === "light" ? <FaMoon /> : <FaSun />}
