@@ -138,23 +138,22 @@ const Navbar = () => {
             </NavLink>
             {/* <NavLink to={'/write-blog'} className={`cursor-pointer`}><li>Write a Blog</li></NavLink> */}
           </ul>
-          <div style={{ justifyContent: "space-between" }}>
-            <div className="flex">
-              <Button onClick={() => dispatch(toggleTheme())} className="">
-                {theme === "light" ? <FaMoon /> : <FaSun />}
-              </Button>
 
-              {/* i18n */}
-              <div className="d-flex">
-                <Select onChange={onChangeLang}>
-                  <SelectTrigger className="w-[40px]"></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="english">en</SelectItem>
-                    <SelectItem value="french">fr</SelectItem>
-                    <SelectItem value="arabic">ar</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          <div className="flex">
+            <Button onClick={() => dispatch(toggleTheme())} className="">
+              {theme === "light" ? <FaMoon /> : <FaSun />}
+            </Button>
+
+            {/* i18n */}
+            <div className="flex">
+              <Select onChange={onChangeLang}>
+                <SelectTrigger className="w-[40px]"></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="english">en</SelectItem>
+                  <SelectItem value="french">fr</SelectItem>
+                  <SelectItem value="arabic">ar</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {user ? (
