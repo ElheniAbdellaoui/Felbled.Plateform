@@ -128,33 +128,33 @@ const Navbar = () => {
         <nav className="flex md:gap-7 gap-4 items-center">
           <ul className="hidden md:flex gap-7 items-center text-xl font-semibold">
             <NavLink to={"/"} className="cursor-pointer">
-              <li>{t("Investir")}</li>
+              <li>{t("Home")}</li>
             </NavLink>
             <NavLink to={"/blogs"} className={`cursor-pointer`}>
               <li>{t("Blogs")}</li>
             </NavLink>
             <NavLink to={"/about"} className={`cursor-pointer`}>
-              <li>{t("My Business")}</li>
+              <li>{t("About")}</li>
             </NavLink>
             {/* <NavLink to={'/write-blog'} className={`cursor-pointer`}><li>Write a Blog</li></NavLink> */}
           </ul>
-          <div className="flex">
-            <Button onClick={() => dispatch(toggleTheme())} className="">
-              {theme === "light" ? <FaMoon /> : <FaSun />}
-            </Button>
+          <div className="d-flex">
+            <div className="flex">
+              <Button onClick={() => dispatch(toggleTheme())} className="">
+                {theme === "light" ? <FaMoon /> : <FaSun />}
+              </Button>
 
-            {/* i18n */}
-            <div className="d-flex">
-              <Select onChange={onChangeLang}>
-                <SelectTrigger className="w-[40px]">
-                  <SelectValue placeholder="en" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="english">en</SelectItem>
-                  <SelectItem value="french">fr</SelectItem>
-                  <SelectItem value="arabic">ar</SelectItem>
-                </SelectContent>
-              </Select>
+              {/* i18n */}
+              <div className="d-flex">
+                <Select onChange={onChangeLang}>
+                  <SelectTrigger className="w-[40px]"></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="english">en</SelectItem>
+                    <SelectItem value="french">fr</SelectItem>
+                    <SelectItem value="arabic">ar</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {user ? (
