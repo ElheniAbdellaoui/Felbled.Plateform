@@ -140,12 +140,12 @@ const Navbar = () => {
             {/* i18n */}
             <Select>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Theme" />
+                <SelectValue placeholder="" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="light">en</SelectItem>
-                <SelectItem value="dark">fr</SelectItem>
-                <SelectItem value="system">ar</SelectItem>
+                <SelectItem value="english">en</SelectItem>
+                <SelectItem value="french">fr</SelectItem>
+                <SelectItem value="arabic">ar</SelectItem>
               </SelectContent>
             </Select>
 
