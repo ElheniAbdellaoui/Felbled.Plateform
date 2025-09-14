@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+import { StrictMode, Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
@@ -12,7 +12,7 @@ import "./i18n";
 
 const persistor = persistStore(store);
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
+  <Suspense fallback="loading">
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <ThemeProvider>
@@ -21,5 +21,5 @@ createRoot(document.getElementById("root")).render(
         <Toaster />
       </PersistGate>
     </Provider>
-  </StrictMode>
+  </Suspense>
 );

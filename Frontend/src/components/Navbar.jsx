@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Input } from "./ui/input";
@@ -96,6 +96,19 @@ const Navbar = () => {
   const toggleNav = () => {
     setOpenNav(!openNav);
   };
+
+  useEffect(() => {
+    for (
+      let index = 0;
+      index < document.getElementsByClassName("lang").length;
+      index++
+    ) {
+      const element = document.getElementsByClassName("lang")[index];
+      if (element.value === i18n.language) {
+        element.setAttribute("selected", "true");
+      }
+    }
+  }, []);
   return (
     <div className="py-2 fixed w-full dark:bg-gray-800 dark:border-b-gray-600 border-b-gray-300 border-2 bg-white z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-4 md:px-0">
@@ -149,9 +162,15 @@ const Navbar = () => {
               <Select onChange={onChangeLang}>
                 <SelectTrigger className="w-[40px]"></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="english">en</SelectItem>
-                  <SelectItem value="french">fr</SelectItem>
-                  <SelectItem value="arabic">ar</SelectItem>
+                  <SelectItem className="lang" value="english">
+                    en
+                  </SelectItem>
+                  <SelectItem className="lang" value="french">
+                    fr
+                  </SelectItem>
+                  <SelectItem className="lang" value="arabic">
+                    ar
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>

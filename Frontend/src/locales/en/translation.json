@@ -1,0 +1,9 @@
+{
+  "title": "welcome to page home",
+
+  "menu": {
+    "home": "Home",
+    "blogs": "Blogs",
+    "about": "About"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "title": "bienvenue sur la page d'accueil",
+
+  "menu": {
+    "home": "Acceuil",
+    "blogs": "Blogs",
+    "about": "A propos"
+  }
+}
