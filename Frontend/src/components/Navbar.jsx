@@ -141,13 +141,13 @@ const Navbar = () => {
         <nav className="flex md:gap-7 gap-4 items-center">
           <ul className="hidden md:flex gap-7 items-center text-xl font-semibold">
             <NavLink to={"/"} className="cursor-pointer">
-              <li>{t("Home")}</li>
+              <li>{t("menu.home")}</li>
             </NavLink>
             <NavLink to={"/blogs"} className={`cursor-pointer`}>
-              <li>{t("Blogs")}</li>
+              <li>{t("menu.blogs")}</li>
             </NavLink>
             <NavLink to={"/about"} className={`cursor-pointer`}>
-              <li>{t("About")}</li>
+              <li>{t("menu.about")}</li>
             </NavLink>
             {/* <NavLink to={'/write-blog'} className={`cursor-pointer`}><li>Write a Blog</li></NavLink> */}
           </ul>
@@ -162,15 +162,9 @@ const Navbar = () => {
               <Select onChange={onChangeLang}>
                 <SelectTrigger className="w-[40px]"></SelectTrigger>
                 <SelectContent>
-                  <SelectItem className="lang" value="english">
-                    en
-                  </SelectItem>
-                  <SelectItem className="lang" value="french">
-                    fr
-                  </SelectItem>
-                  <SelectItem className="lang" value="arabic">
-                    ar
-                  </SelectItem>
+                  <SelectItem value="en">EN</SelectItem>
+                  <SelectItem value="fr">FR</SelectItem>
+                  <SelectItem value="ar">AR</SelectItem>
                 </SelectContent>
               </Select>
             </div>
