@@ -1,5 +1,6 @@
 import React from "react";
 import aboutImg from "../assets/About-blog.avif";
+import { useTranslation } from "react-i18next";
 
 const About = () => {
   return (
