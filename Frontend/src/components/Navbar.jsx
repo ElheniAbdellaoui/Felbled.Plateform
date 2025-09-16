@@ -62,8 +62,8 @@ const Navbar = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   // const user = false;
-  const onChangeLang = (e) => {
-    i18n.changeLanguage(e.target.value);
+  const onChangeLang = (lang) => {
+    i18n.changeLanguage(lang);
   };
 
   const logoutHandler = async (e) => {
@@ -159,8 +159,10 @@ const Navbar = () => {
 
             {/* i18n */}
             <div className="flex">
-              <Select onChange={onChangeLang}>
-                <SelectTrigger className="w-[40px]"></SelectTrigger>
+              <Select onValueChange={onChangeLang} defaultValue={i18n.language}>
+                <SelectTrigger className="w-[60px]">
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="en">EN</SelectItem>
                   <SelectItem value="fr">FR</SelectItem>
