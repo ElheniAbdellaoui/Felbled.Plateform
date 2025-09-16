@@ -9,4 +9,14 @@
     "signup": "Try for Free",
     "logout": "Logout"
   }
+},
+{
+"hero": {
+"title": "Invest with confidence in your finances",
+"subtitle": "With our platform, gain an edge with intuitive tools and experts..."
+},
+"buttons": {
+"join": "Join",
+"learn_more": "Learn more"
+}
 }

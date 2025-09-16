@@ -9,5 +9,15 @@
     "signup": "Essayer Gratuitement",
 
     "logout": "Déconnexion"
+  }},
+
+{
+  "hero": {
+    "title": "Investissez avec confiance dans vos finances",
+    "subtitle": "Avec notre plateforme, prenez l’avantage avec des outils intuitifs et des experts..."
+  },
+  "buttons": {
+    "join": "Rejoignez-vous",
+    "learn_more": "En savoir plus"
   }
 }
