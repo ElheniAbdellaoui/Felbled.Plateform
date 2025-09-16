@@ -217,23 +217,23 @@ const Navbar = () => {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={logoutHandler}>
                       <LogOut />
-                      <span>Log out</span>
+                      <span>{t("menu.logout")}</span>
                       <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
                 {/* </Link> */}
                 <Button className="hidden md:block" onClick={logoutHandler}>
-                  Logout
+                  {t("menu.logout")}
                 </Button>
               </div>
             ) : (
               <div className="ml-7 md:flex gap-2 ">
                 <Link to={"/login"}>
-                  <Button>{t("Se Connecter")}</Button>
+                  <Button>{t("menu.se connecter")}</Button>
                 </Link>
                 <Link className="hidden md:block" to={"/signup"}>
-                  <Button>{t("Essayer Gratuitement")}</Button>
+                  <Button>{t("menu.signup")}</Button>
                 </Link>
               </div>
             )}

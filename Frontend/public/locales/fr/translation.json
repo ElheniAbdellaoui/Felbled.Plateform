@@ -4,6 +4,10 @@
   "menu": {
     "home": "Acceuil",
     "blogs": "Blogs",
-    "about": "A propos"
+    "about": "A propos",
+    "se connecter": "Se Connecter",
+    "signup": "Essayer Gratuitement",
+
+    "logout": "Déconnexion"
   }
 }

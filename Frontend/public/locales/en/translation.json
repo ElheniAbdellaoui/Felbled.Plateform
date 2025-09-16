@@ -4,6 +4,9 @@
   "menu": {
     "home": "Home",
     "blogs": "Blogs",
-    "about": "About"
+    "about": "About",
+    "se connecter": "Log In",
+    "signup": "Try for Free",
+    "logout": "Logout"
   }
 }
