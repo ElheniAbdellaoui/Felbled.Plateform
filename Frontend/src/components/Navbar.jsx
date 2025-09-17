@@ -61,7 +61,7 @@ const Navbar = () => {
   const [openNav, setOpenNav] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const userRole = user?.role || "guest";
+
   // const user = false;
   const onChangeLang = (lang) => {
     i18n.changeLanguage(lang);
