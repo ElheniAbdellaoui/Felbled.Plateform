@@ -36,9 +36,33 @@ const PopularAuthors = () => {
           <hr className=" w-24 text-center border-2 border-red-500 rounded-full" />
           <Carousel>
             <CarouselContent>
-              <CarouselItem>...</CarouselItem>
-              <CarouselItem>...</CarouselItem>
-              <CarouselItem>...</CarouselItem>
+              <CarouselItem>
+                <div className="p-1">
+                  <Card>
+                    <CardContent className="flex aspect-square items-center justify-center p-6">
+                      <span className="text-2xl font-semibold"></span>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CarouselItem>
+              <CarouselItem>
+                <div className="p-1">
+                  <Card>
+                    <CardContent className="flex aspect-square items-center justify-center p-6">
+                      <span className="text-2xl font-semibold"></span>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CarouselItem>
+              <CarouselItem>
+                <div className="p-1">
+                  <Card>
+                    <CardContent className="flex aspect-square items-center justify-center p-6">
+                      <span className="text-2xl font-semibold"></span>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CarouselItem>
             </CarouselContent>
             <CarouselPrevious />
             <CarouselNext />
