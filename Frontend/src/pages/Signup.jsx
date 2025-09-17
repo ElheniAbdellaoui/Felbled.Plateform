@@ -21,17 +21,17 @@ const Signup = () => {
   const { loading } = useSelector((store) => store.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const userRole = user?.role || "guest";
-  const [useRole, setUseRole] = useState("User");
 
+  // ✅ état unique pour l'utilisateur
   const [user, setUser] = useState({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
-    userRole: userRole,
+    userRole: "User", // valeur par défaut
   });
 
+  // ✅ fonction générique pour inputs + select
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUser((prev) => ({ ...prev, [name]: value }));
@@ -123,7 +123,7 @@ const Signup = () => {
                 <Label>Password</Label>
                 <Input
                   type={showPassword ? "text" : "password"}
-                  placeholder="create your password"
+                  placeholder="Create your password"
                   name="password"
                   value={user.password}
                   onChange={handleChange}
@@ -136,16 +136,21 @@ const Signup = () => {
                   {showPassword ? <EyeOff size="20" /> : <Eye size="20" />}
                 </button>
               </div>
-              <select
-                name=""
-                id=""
-                style={{ display: "flex" }}
-                value={useRole}
-                onChange={(e) => setUseRole(e.target.value)}
-              >
-                <option value="User">User</option>
-                <option value="Professeur">Professeur</option>
-              </select>
+
+              {/* ✅ select lié directement à user.userRole */}
+              <div>
+                <Label>Role</Label>
+                <select
+                  name="userRole"
+                  value={user.userRole}
+                  onChange={handleChange}
+                  className="border rounded-md p-2 w-full"
+                >
+                  <option value="User">User</option>
+                  <option value="Professeur">Professeur</option>
+                </select>
+              </div>
+
               <Button type="submit" className="w-full">
                 {loading ? (
                   <>
@@ -157,7 +162,7 @@ const Signup = () => {
                 )}
               </Button>
               <p className="text-center text-gray-600 dark:text-gray-300">
-                Already have an account?
+                Already have an account?{" "}
                 <Link to="/login">
                   <span className="underline cursor-pointer">Sign in</span>
                 </Link>

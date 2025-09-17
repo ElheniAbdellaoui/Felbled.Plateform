@@ -19,20 +19,19 @@ import { setLoading, setUser } from "../redux/authSlice";
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { loading } = useSelector((store) => store.auth);
-  const navigate = useNavigate();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const [input, setInput] = useState({
+  const [user, setUserState] = useState({
     email: "",
     password: "",
   });
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setInput((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setUserState((prev) => ({ ...prev, [name]: value }));
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -45,29 +44,33 @@ const Login = () => {
       dispatch(setLoading(true));
       const res = await axios.post(
         "https://felblad-plateform.onrender.com/api/v1/user/login",
-        input,
+        user,
         {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
         }
       );
+
       if (res.data?.success) {
         dispatch(setUser(res.data.user));
         toast.success(res.data?.message || "Connexion réussie");
         navigate("/");
+      } else {
+        toast.error(res.data?.message || "Erreur de connexion");
       }
     } catch (err) {
-      const msg =
-        err.response?.data?.message || err.message || "Erreur inconnue";
-      toast.error(msg);
+      toast.error(
+        err.response?.data?.message || err.message || "Erreur inconnue"
+      );
     } finally {
       dispatch(setLoading(false));
     }
   };
+
   return (
     <div className="flex h-screen md:pt-14 md:h-[760px]">
-      <div className="hidden md:block ">
-        <img src={auth} alt="" className="h-[700px]" />
+      <div className="hidden md:block">
+        <img src={auth} alt="Login illustration" className="h-[700px]" />
       </div>
       <div className="flex justify-center items-center flex-1 px-4 md:px-0">
         <Card className="w-full max-w-md p-6 shadow-lg rounded-2xl dark:bg-gray-800 dark:border-gray-600">
@@ -89,9 +92,10 @@ const Login = () => {
                   type="email"
                   placeholder="Enter your email"
                   name="email"
-                  className="dark:border-gray-600 dark:bg-gray-900"
-                  value={input.email}
+                  value={user.email}
                   onChange={handleChange}
+                  required
+                  className="dark:border-gray-600 dark:bg-gray-900"
                 />
               </div>
               <div className="relative">
@@ -100,34 +104,34 @@ const Login = () => {
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   name="password"
-                  className="dark:border-gray-600 dark:bg-gray-900"
-                  value={input.password}
+                  value={user.password}
                   onChange={handleChange}
+                  required
+                  className="dark:border-gray-600 dark:bg-gray-900"
                 />
                 <button
-                  onClick={() => setShowPassword(!showPassword)}
                   type="button"
+                  onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-6 text-gray-500"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? <EyeOff size="20" /> : <Eye size="20" />}
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                    please wait
+                    Please wait...
                   </>
                 ) : (
                   "Login"
                 )}
               </Button>
               <p className="text-center text-gray-600 dark:text-gray-300">
-                Don't have an account?
-                <Link to={"/signup"}>
-                  <span className="underline cursor-pointer hover:text-gray-800 dark:text-gray-100">
-                    Sign up
-                  </span>
+                Don't have an account?{" "}
+                <Link to="/signup">
+                  <span className="underline cursor-pointer">Sign up</span>
                 </Link>
               </p>
             </form>
