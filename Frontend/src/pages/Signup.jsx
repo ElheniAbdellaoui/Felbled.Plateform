@@ -21,6 +21,7 @@ const Signup = () => {
   const { loading } = useSelector((store) => store.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const userRole = user?.role || "guest";
   const [useRole, setUseRole] = useState("User");
 
   const [user, setUser] = useState({
