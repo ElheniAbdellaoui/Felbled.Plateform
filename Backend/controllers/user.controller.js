@@ -9,8 +9,8 @@ import cloudinary from "cloudinary"; // Assurez-vous que cloudinary est bien con
 export const register = async (req, res) => {
   console.log("📦 Body reçu :", req.body);
   try {
-    const { firstName, lastName, email, password } = req.body;
-    if (!firstName || !lastName || !email || !password) {
+    const { firstName, lastName, email, password, userRole } = req.body;
+    if (!firstName || !lastName || !email || !password || !userRole) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
@@ -43,6 +43,7 @@ export const register = async (req, res) => {
       lastName,
       email,
       password: hashPassword,
+      userRole,
     });
     return res.status(201).json({
       success: true,

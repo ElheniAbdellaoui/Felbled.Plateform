@@ -21,12 +21,14 @@ const Signup = () => {
   const { loading } = useSelector((store) => store.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [useRole, setUseRole] = useState("User");
 
   const [user, setUser] = useState({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
+    userRole: userRole,
   });
 
   const handleChange = (e) => {
@@ -133,6 +135,16 @@ const Signup = () => {
                   {showPassword ? <EyeOff size="20" /> : <Eye size="20" />}
                 </button>
               </div>
+              <select
+                name=""
+                id=""
+                style={{ display: "flex" }}
+                value={useRole}
+                onChange={(e) => setUseRole(e.target.value)}
+              >
+                <option value="User">User</option>
+                <option value="Professeur">Professeur</option>
+              </select>
               <Button type="submit" className="w-full">
                 {loading ? (
                   <>
