@@ -1,6 +1,13 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import userLogo from "../assets/user.jpg";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const PopularAuthors = () => {
   const [popularUser, setPopularUser] = useState([]);
@@ -27,6 +34,15 @@ const PopularAuthors = () => {
             Popular Authors
           </h1>
           <hr className=" w-24 text-center border-2 border-red-500 rounded-full" />
+          <Carousel>
+            <CarouselContent>
+              <CarouselItem>...</CarouselItem>
+              <CarouselItem>...</CarouselItem>
+              <CarouselItem>...</CarouselItem>
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
         </div>
       </div>
     </div>
