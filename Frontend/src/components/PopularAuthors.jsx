@@ -8,6 +8,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { Card, CardContent } from "./ui/card";
 
 const PopularAuthors = () => {
   const [popularUser, setPopularUser] = useState([]);
