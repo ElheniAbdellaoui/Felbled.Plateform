@@ -33,7 +33,7 @@ const PopularAuthors = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col space-y-4 items-center">
           <h1 className="text-3xl md:text-4xl font-bold pt-10 ">
-            Popular Authors
+            Cours Qualifiés Pour Les Elèves
           </h1>
           <hr className=" w-24 text-center border-2 border-red-500 rounded-full" />
           <div>
