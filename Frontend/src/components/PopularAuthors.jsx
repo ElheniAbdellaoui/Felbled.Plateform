@@ -83,7 +83,7 @@ const PopularAuthors = () => {
                     className="pl-4 md:basis-1/2 lg:basis-1/3"
                   >
                     <div className="p-4">
-                      <Card className="rounded-xl shadow-md hover:shadow-lg transition">
+                      <Card className="rounded-xl shadow-md hover:shadow-lg transition h-80 flex">
                         <CardContent className="flex flex-col items-center text-center space-y-3 p-6">
                           {/* Cercle avec numéro */}
                           <div
@@ -143,7 +143,7 @@ const PopularAuthors = () => {
                     className="pl-4 md:basis-1/2 lg:basis-1/3"
                   >
                     <div className="p-4">
-                      <Card className="rounded-xl shadow-md hover:shadow-lg transition">
+                      <Card className="rounded-xl shadow-md hover:shadow-lg transition h-80 flex">
                         <CardContent className="flex flex-col items-center text-center space-y-3 p-6">
                           {/* Cercle avec numéro */}
                           <div
@@ -209,7 +209,7 @@ const PopularAuthors = () => {
                     className="pl-4 md:basis-1/2 lg:basis-1/3"
                   >
                     <div className="p-4">
-                      <Card className="rounded-xl shadow-md hover:shadow-lg transition">
+                      <Card className="rounded-xl shadow-md hover:shadow-lg transition h-80 flex">
                         <CardContent className="flex flex-col items-center text-center space-y-3 p-6">
                           {/* Cercle avec numéro */}
                           <div
