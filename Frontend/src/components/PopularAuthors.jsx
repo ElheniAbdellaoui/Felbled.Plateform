@@ -1,6 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import userLogo from "../assets/user.jpg";
+
 import {
   Carousel,
   CarouselContent,
@@ -12,22 +12,6 @@ import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 
 const PopularAuthors = () => {
-  const [popularUser, setPopularUser] = useState([]);
-  const getAllUsers = async () => {
-    try {
-      const res = await axios.get(
-        `https://felblad-plateform.onrender.com/api/v1/user/all-users`
-      );
-      if (res.data.success) {
-        setPopularUser(res.data.users);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  useEffect(() => {
-    getAllUsers();
-  }, []);
   return (
     <div>
       <div className="max-w-7xl mx-auto">
@@ -122,20 +106,20 @@ const PopularAuthors = () => {
                   {
                     num: 7,
                     color: "bg-red-500",
-                    title: "Matières Primaire - Année 1",
-                    desc: "Première année, centrée sur les compétences de base en lecture et en mathématiques.",
+                    title: "Matières Primaire - Année 7",
+                    desc: "Septième année, centrée sur les compétences de base en lecture et en mathématiques.",
                   },
                   {
                     num: 8,
                     color: "bg-red-400",
-                    title: "Matières Primaire - Année 2",
-                    desc: "Deuxième année, développement de la lecture, de l'écriture et des premières notions de sciences.",
+                    title: "Matières Primaire - Année 8",
+                    desc: "Huitième année, développement de la lecture, de l'écriture et des premières notions de sciences.",
                   },
                   {
                     num: 9,
                     color: "bg-yellow-500",
-                    title: "Matières Primaire - Année 3",
-                    desc: "Troisième année, approfondissement de l'histoire, des langues et de la pensée critique.",
+                    title: "Matières Primaire - Année 9",
+                    desc: "Neuvième année, approfondissement de l'histoire, des langues et de la pensée critique.",
                   },
                 ].map((item, index) => (
                   <CarouselItem
@@ -182,25 +166,25 @@ const PopularAuthors = () => {
                   {
                     num: 1,
                     color: "bg-red-500",
-                    title: "Matières Primaire - Année 1",
+                    title: "Matières Secondaire - Année 1",
                     desc: "Première année, centrée sur les compétences de base en lecture et en mathématiques.",
                   },
                   {
                     num: 2,
                     color: "bg-red-400",
-                    title: "Matières Primaire - Année 2",
+                    title: "Matières Secondaire - Année 2",
                     desc: "Deuxième année, développement de la lecture, de l'écriture et des premières notions de sciences.",
                   },
                   {
                     num: 3,
                     color: "bg-yellow-500",
-                    title: "Matières Primaire - Année 3",
+                    title: "Matières Secondaire - Année 3",
                     desc: "Troisième année, approfondissement de l'histoire, des langues et de la pensée critique.",
                   },
                   {
                     num: 4,
                     color: "bg-lime-500",
-                    title: "Matières Primaire - Année 4",
+                    title: "Matières Secondaire - Année 4",
                     desc: "Quatrième année, perfectionnement des compétences et introduction à des sujets plus complexes.",
                   },
                 ].map((item, index) => (
