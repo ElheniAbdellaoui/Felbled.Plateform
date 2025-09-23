@@ -90,9 +90,13 @@ export const login = async (req, res) => {
     }
     console.log("SECRET_KEY:", process.env.SECRET_KEY);
 
-    const token = await jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
-      expiresIn: "1d",
-    });
+    const token = await jwt.sign(
+      { userId: user._id, role: user.role },
+      process.env.SECRET_KEY,
+      {
+        expiresIn: "1d",
+      }
+    );
 
     return res
       .status(200)

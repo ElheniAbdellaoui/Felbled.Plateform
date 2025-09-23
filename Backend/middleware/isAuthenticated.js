@@ -10,16 +10,22 @@ export const isAuthenticated = async (req, res, next) => {
         success: false,
       });
     }
+
     const decode = jwt.verify(token, process.env.SECRET_KEY);
-    if (!decode) {
+    req.id = decode.userId;
+    req.role = decode.role;
+
+    next();
+  } catch (error) {
+    if (error.name === "TokenExpiredError") {
       return res.status(401).json({
-        message: "Invalid token",
+        message: "Session expired, please login again",
         success: false,
       });
     }
-    req.id = decode.userId;
-    next();
-  } catch (error) {
-    console.log(error);
+    return res.status(401).json({
+      message: "Invalid token",
+      success: false,
+    });
   }
 };
