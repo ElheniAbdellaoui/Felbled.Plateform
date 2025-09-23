@@ -22,9 +22,9 @@ const Footer = () => {
           <p className="mt-2">
             Sharing insights, tutorials, and ideas on web development and tech.
           </p>
-          <p className="mt-2 text-sm">123 Blog St, Style City, NY 10001</p>
-          <p className="text-sm">Email: support@blog.com</p>
-          <p className="text-sm">Phone: (123) 456-7890</p>
+          <p className="mt-2 text-sm">123 Blog St, Style City,BIZERTE</p>
+          <p className="text-sm">Email: abedellaouihani@gmail.com</p>
+          <p className="text-sm">Phone: (+216)58 069270 </p>
         </div>
         {/* customer service link */}
         <div className="mb-6 md:mb-0">
