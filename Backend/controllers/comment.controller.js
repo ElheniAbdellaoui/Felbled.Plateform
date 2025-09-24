@@ -1,4 +1,3 @@
-import { Blog } from "../models/blog.model.js";
 import Comment from "../models/comment.model.js";
 
 export const createComment = async (req, res) => {
@@ -72,12 +71,10 @@ export const deleteComment = async (req, res) => {
       comment.userId.toString() !== requestorId &&
       requestorRole !== "admin"
     ) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "Unauthorized to delete this comment",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized to delete this comment",
+      });
     }
 
     const blogId = comment.postId;
@@ -88,13 +85,11 @@ export const deleteComment = async (req, res) => {
       .status(200)
       .json({ success: true, message: "Comment deleted Successfully" });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error deleting comment",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error deleting comment",
+      error: error.message,
+    });
   }
 };
 export const editComment = async (req, res) => {

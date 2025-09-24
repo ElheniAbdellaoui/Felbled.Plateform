@@ -1,4 +1,3 @@
-import { Blog } from "../models/blog.model.js";
 import cloudinary from "../utils/cloudinary.js";
 import getDataUri from "../utils/dataUri.js";
 import Comment from "../models/comment.model.js";
@@ -159,13 +158,11 @@ export const getAllBlogs = async (_, res) => {
       });
     res.status(200).json({ success: true, blogs });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: "Error fetching blogs",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      message: "Error fetching blogs",
+      error: error.message,
+    });
   }
 };
 

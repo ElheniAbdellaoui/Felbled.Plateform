@@ -9,7 +9,6 @@ import {
 import { isAuthenticated } from "../middleware/isAuthenticated.js";
 import { authorizeRoles } from "../middleware/authorizeRoles.js";
 import { singleUpload } from "../middleware/multer.js";
-import { getAdminStats } from "../controllers/admin.controller.js";
 
 const router = express.Router();
 
