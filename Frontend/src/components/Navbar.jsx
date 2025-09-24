@@ -175,54 +175,53 @@ const Navbar = () => {
             {user ? (
               <div className="ml-7 flex gap-3 items-center">
                 {/* <Link to={'/profile'}> */}
-                <DropdownMenu className="">
-                  <DropdownMenuTrigger asChild>
-                    <Avatar className="cursor-pointer">
-                      <AvatarImage src={user.photoUrl || userLogo} />
-                      <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="w-56 dark:bg-gray-800">
-                    <DropdownMenuLabel>{t("My Account")}</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuGroup>
-                      <DropdownMenuItem
-                        onClick={() => navigate("/dashboard/profile")}
-                      >
-                        <User />
-                        <span>{t("Profile")}</span>
-                        <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => navigate("/dashboard/your-blog")}
-                      >
-                        <ChartColumnBig />
-                        <span>Your Blog</span>
-                        <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => navigate("/dashboard/comments")}
-                      >
-                        <LiaCommentSolid />
-                        <span>Comments</span>
-                        <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => navigate("/dashboard/write-blog")}
-                      >
-                        <FaRegEdit />
-                        <span>Write Blog</span>
-                        <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
-                      </DropdownMenuItem>
-                    </DropdownMenuGroup>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={logoutHandler}>
-                      <LogOut />
-                      <span>{t("menu.logout")}</span>
-                      <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    onClick={() => navigate("/dashboard/profile")}
+                  >
+                    <User />
+                    <span>{t("Profile")}</span>
+                    <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => navigate("/dashboard/your-blog")}
+                  >
+                    <ChartColumnBig />
+                    <span>Your Blog</span>
+                    <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => navigate("/dashboard/comments")}
+                  >
+                    <LiaCommentSolid />
+                    <span>Comments</span>
+                    <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => navigate("/dashboard/write-blog")}
+                  >
+                    <FaRegEdit />
+                    <span>Write Blog</span>
+                    <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                  </DropdownMenuItem>
+
+                  {/* Liens basés sur le rôle */}
+                  {user?.role === "admin" && (
+                    <DropdownMenuItem onClick={() => navigate("/admin")}>
+                      <Users />
+                      <span>Admin Dashboard</span>
                     </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                  )}
+
+                  {user?.role === "professeur" && (
+                    <DropdownMenuItem
+                      onClick={() => navigate("/dashboard/write-course")}
+                    >
+                      <FaEdit />
+                      <span>Écrire un cours</span>
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuGroup>
                 {/* </Link> */}
                 <Button className="hidden md:block" onClick={logoutHandler}>
                   {t("menu.logout")}

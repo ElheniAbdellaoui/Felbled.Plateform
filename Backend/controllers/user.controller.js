@@ -1,10 +1,12 @@
 import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 
 import getDataUri from "../utils/dataUri.js"; // ✅ importer la fonction
 
 import cloudinary from "cloudinary"; // Assurez-vous que cloudinary est bien configuré
+import { sendEmail } from "../utils/sendEmail.js";
 
 export const register = async (req, res) => {
   console.log("📦 Body reçu :", req.body);
@@ -234,4 +236,41 @@ export const getAllUsers = async (req, res) => {
       message: "Failed to fetch users",
     });
   }
+};
+
+export const requestPasswordReset = async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user)
+    return res.status(404).json({ success: false, message: "User not found" });
+
+  const resetToken = crypto.randomBytes(20).toString("hex");
+  user.resetPasswordToken = resetToken;
+  user.resetPasswordExpire = Date.now() + 3600000; // 1 hour
+  await user.save();
+
+  const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+  const html = `<p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 1 hour.</p>`;
+  await sendEmail({ to: user.email, subject: "Reset password", html });
+
+  res.status(200).json({ success: true, message: "Email sent" });
+};
+
+export const resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+  const user = await User.findOne({
+    resetPasswordToken: token,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+  if (!user)
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid or expired token" });
+
+  user.password = await bcrypt.hash(password, 10);
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+  await user.save();
+  res.status(200).json({ success: true, message: "Password reset successful" });
 };

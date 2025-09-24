@@ -9,11 +9,12 @@ import {
 import { isAuthenticated } from "../middleware/isAuthenticated.js";
 import { authorizeRoles } from "../middleware/authorizeRoles.js";
 import { singleUpload } from "../middleware/multer.js";
+import { getAdminStats } from "../controllers/admin.controller.js";
 
 const router = express.Router();
 
 // Admin → gérer les utilisateurs
-router.get("/all-users", isAuthenticated, authorizeRoles("admin"), getAllUsers);
+router.get("/stats", isAuthenticated, authorizeRoles("admin"), getAdminStats);
 
 // Tous → s'inscrire, se connecter, se déconnecter
 router.post("/register", register);
