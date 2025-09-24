@@ -59,44 +59,42 @@ export const getCommentsOfPost = async (req, res) => {
 export const deleteComment = async (req, res) => {
   try {
     const commentId = req.params.id;
-    const authorId = req.id;
-    const userRole = req.role; // récupéré depuis middleware isAuthenticated
+    const requestorId = req.id;
+    const requestorRole = req.role;
 
     const comment = await Comment.findById(commentId);
-
-    if (!comment) {
+    if (!comment)
       return res
         .status(404)
         .json({ success: false, message: "Comment not found" });
-    }
 
-    // ✅ Autorisation : Admin OU Auteur
-    if (comment.userId.toString() !== authorId && userRole !== "admin") {
-      return res.status(403).json({
-        success: false,
-        message: "Unauthorized to delete this comment",
-      });
+    if (
+      comment.userId.toString() !== requestorId &&
+      requestorRole !== "admin"
+    ) {
+      return res
+        .status(403)
+        .json({
+          success: false,
+          message: "Unauthorized to delete this comment",
+        });
     }
 
     const blogId = comment.postId;
-
-    // Supprimer le commentaire
     await Comment.findByIdAndDelete(commentId);
-
-    // Retirer du blog
-    await Blog.findByIdAndUpdate(blogId, {
-      $pull: { comments: commentId },
-    });
+    await Blog.findByIdAndUpdate(blogId, { $pull: { comments: commentId } });
 
     res
       .status(200)
-      .json({ success: true, message: "Comment deleted successfully" });
+      .json({ success: true, message: "Comment deleted Successfully" });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Error deleting comment",
-      error: error.message,
-    });
+    res
+      .status(500)
+      .json({
+        success: false,
+        message: "Error deleting comment",
+        error: error.message,
+      });
   }
 };
 export const editComment = async (req, res) => {
