@@ -13,9 +13,6 @@ import { getAdminStats } from "../controllers/admin.controller.js";
 
 const router = express.Router();
 
-// Admin → gérer les utilisateurs
-router.get("/stats", isAuthenticated, authorizeRoles("admin"), getAdminStats);
-
 // Tous → s'inscrire, se connecter, se déconnecter
 router.post("/register", register);
 router.post("/login", login);

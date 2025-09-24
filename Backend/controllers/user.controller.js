@@ -9,55 +9,28 @@ import cloudinary from "cloudinary"; // Assurez-vous que cloudinary est bien con
 import { sendEmail } from "../utils/sendEmail.js";
 
 export const register = async (req, res) => {
-  console.log("📦 Body reçu :", req.body);
   try {
-    const { firstName, lastName, email, password, userRole } = req.body;
-    if (!firstName || !lastName || !email || !password || !userRole) {
-      return res.status(400).json({
-        success: false,
-        message: "All fields are required",
-      });
-    }
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const user = await User.create(req.body);
+    const verifyToken = crypto.randomBytes(20).toString("hex");
+    user.verifyToken = crypto
+      .createHash("sha256")
+      .update(verifyToken)
+      .digest("hex");
+    user.verifyTokenExpire = Date.now() + 3600000; // 1h
+    await user.save();
 
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid email",
-      });
-    }
-    if (password.length < 6) {
-      return res.status(400).json({
-        success: false,
-        message: "Password must be at least 6 characters",
-      });
-    }
-    const existingUserByEmail = await User.findOne({ email: email });
-    if (existingUserByEmail) {
-      return res.status(400).json({
-        success: false,
-        message: "Email already exists",
-      });
-    }
-    const hashPassword = await bcrypt.hash(password, 10);
-    await User.create({
-      firstName,
-      lastName,
-      email,
-      password: hashPassword,
-      userRole,
+    const verifyUrl = `${process.env.FRONTEND_URL}/verify-email/${verifyToken}`;
+    await sendEmail({
+      to: user.email,
+      subject: "Verify Email",
+      html: `<a href="${verifyUrl}">Verify your email</a>`,
     });
-    return res.status(201).json({
-      success: true,
-      message: "Account Created Successfully",
-    });
-  } catch (error) {
-    console.error("❌ REGISTER ERROR:", error);
 
-    return res.status(500).json({
-      success: false,
-      message: "Failed to register",
-    });
+    res
+      .status(201)
+      .json({ success: true, message: "Registered, verify your email!" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -238,39 +211,55 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-export const requestPasswordReset = async (req, res) => {
-  const { email } = req.body;
-  const user = await User.findOne({ email });
+export const verifyEmail = async (req, res) => {
+  const token = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+  const user = await User.findOne({
+    verifyToken: token,
+    verifyTokenExpire: { $gt: Date.now() },
+  });
   if (!user)
-    return res.status(404).json({ success: false, message: "User not found" });
+    return res.status(400).json({ message: "Invalid or expired token" });
+  user.isVerified = true;
+  user.verifyToken = undefined;
+  await user.save();
+  res.json({ success: true, message: "Email verified" });
+};
 
-  const resetToken = crypto.randomBytes(20).toString("hex");
-  user.resetPasswordToken = resetToken;
-  user.resetPasswordExpire = Date.now() + 3600000; // 1 hour
+export const forgotPassword = async (req, res) => {
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) return res.status(404).json({ message: "User not found" });
+
+  const resetToken = user.getResetToken();
   await user.save();
 
-  const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
-  const html = `<p>Click <a href="${resetUrl}">here</a> to reset your password. This link expires in 1 hour.</p>`;
-  await sendEmail({ to: user.email, subject: "Reset password", html });
+  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+  await sendEmail({
+    to: user.email,
+    subject: "Password Reset",
+    html: `<a href="${resetUrl}">Reset Password</a>`,
+  });
 
-  res.status(200).json({ success: true, message: "Email sent" });
+  res.json({ success: true, message: "Reset link sent" });
 };
 
 export const resetPassword = async (req, res) => {
-  const { token } = req.params;
-  const { password } = req.body;
+  const token = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
   const user = await User.findOne({
     resetPasswordToken: token,
     resetPasswordExpire: { $gt: Date.now() },
   });
   if (!user)
-    return res
-      .status(400)
-      .json({ success: false, message: "Invalid or expired token" });
+    return res.status(400).json({ message: "Invalid or expired token" });
 
-  user.password = await bcrypt.hash(password, 10);
+  user.password = req.body.password;
   user.resetPasswordToken = undefined;
   user.resetPasswordExpire = undefined;
   await user.save();
-  res.status(200).json({ success: true, message: "Password reset successful" });
+  res.json({ success: true, message: "Password reset success" });
 };
