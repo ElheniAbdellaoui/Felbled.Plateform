@@ -37,6 +37,9 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    isVerified: { type: Boolean, default: false }, // pour validation email
+    resetPasswordToken: { type: String },
+    resetPasswordExpire: { type: Date },
     instagram: { type: String, default: "" },
     linkedin: { type: String, default: "" },
     github: { type: String, default: "" },

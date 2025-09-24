@@ -1,4 +1,4 @@
-import React, { Children } from "react";
+import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Home from "./pages/Home";
 import Blog from "./pages/Blog";
@@ -95,28 +95,15 @@ const router = createBrowserRouter([
     children: [
       {
         path: "write-blog",
-        element: (
-          <>
-            <CreateBlog />
-          </>
-        ),
+        element: <CreateBlog />,
       },
-
       {
         path: "your-blog",
-        element: (
-          <>
-            <YourBlog />
-          </>
-        ),
+        element: <YourBlog />,
       },
       {
         path: "comments",
-        element: (
-          <>
-            <Comments />
-          </>
-        ),
+        element: <Comments />,
       },
       {
         path: "profile",
@@ -129,12 +116,9 @@ const router = createBrowserRouter([
     ],
   },
 ]);
+
 const App = () => {
-  return (
-    <>
-      <RouterProvider router={router} />
-    </>
-  );
+  return <RouterProvider router={router} />;
 };
 
 export default App;

@@ -90,26 +90,27 @@ export const login = async (req, res) => {
     }
     console.log("SECRET_KEY:", process.env.SECRET_KEY);
 
-    const token = await jwt.sign(
+    const token = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.SECRET_KEY,
-      {
-        expiresIn: "1d",
-      }
+      { expiresIn: "1d" }
     );
 
-    return res
+    const safeUser = user.toObject();
+    delete safeUser.password;
+
+    res
       .status(200)
       .cookie("token", token, {
-        maxAge: 24 * 60 * 60 * 1000, // 1 jour
-        httpOnly: true, // CORRECT
+        maxAge: 24 * 60 * 60 * 1000,
+        httpOnly: true,
         sameSite: "strict",
-        secure: false, // mettre true si HTTPS
+        secure: process.env.NODE_ENV === "production",
       })
       .json({
         success: true,
         message: `Welcome back ${user.firstName}`,
-        user,
+        user: safeUser,
       });
   } catch (error) {
     console.error("LOGIN ERROR:", error); // pour afficher le vrai message d’erreur

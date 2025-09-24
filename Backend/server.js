@@ -10,10 +10,14 @@ import path from "path";
 dotenv.config();
 import cloudinary from "./utils/cloudinary.js"; // Now safe to import
 import express from "express";
+import helmet from "helmet";
+import compression from "compression";
 console.log("🔍 MONGO_URI chargée :", process.env.MONGO_URI);
 const app = express();
 
 // Middlewares
+app.use(helmet());
+app.use(compression());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
