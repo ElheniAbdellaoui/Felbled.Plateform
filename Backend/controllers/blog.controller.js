@@ -1,6 +1,7 @@
 import cloudinary from "../utils/cloudinary.js";
 import getDataUri from "../utils/dataUri.js";
 import Comment from "../models/comment.model.js";
+import { Blog } from "../models/blog.model.js";
 
 export const createBlog = async (req, res) => {
   try {

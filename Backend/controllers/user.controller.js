@@ -10,27 +10,41 @@ import { sendEmail } from "../utils/sendEmail.js";
 
 export const register = async (req, res) => {
   try {
-    const user = await User.create(req.body);
-    const verifyToken = crypto.randomBytes(20).toString("hex");
-    user.verifyToken = crypto
-      .createHash("sha256")
-      .update(verifyToken)
-      .digest("hex");
-    user.verifyTokenExpire = Date.now() + 3600000; // 1h
-    await user.save();
+    const { name, email, password } = req.body;
 
-    const verifyUrl = `${process.env.FRONTEND_URL}/verify-email/${verifyToken}`;
-    await sendEmail({
-      to: user.email,
-      subject: "Verify Email",
-      html: `<a href="${verifyUrl}">Verify your email</a>`,
+    if (!name || !email || !password) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Tous les champs sont requis" });
+    }
+
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Cet email est déjà utilisé" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
     });
 
-    res
-      .status(201)
-      .json({ success: true, message: "Registered, verify your email!" });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(201).json({
+      success: true,
+      message: "Inscription réussie",
+      user,
+    });
+  } catch (error) {
+    console.error("❌ Erreur register:", error); // <--- LOG utile
+    res.status(500).json({
+      success: false,
+      message: "Erreur serveur lors de l'inscription",
+      error: error.message,
+    });
   }
 };
 
