@@ -22,14 +22,14 @@ const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [user, setUserState] = useState({
+  const [credentials, setCredentials] = useState({
     email: "",
     password: "",
   });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setUserState((prev) => ({ ...prev, [name]: value }));
+    setCredentials((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -42,9 +42,10 @@ const Login = () => {
 
     try {
       dispatch(setLoading(true));
+
       const res = await axios.post(
         "https://felblad-plateform.onrender.com/api/v1/user/login",
-        user,
+        credentials,
         {
           headers: { "Content-Type": "application/json" },
           withCredentials: true,
@@ -92,32 +93,37 @@ const Login = () => {
                   type="email"
                   placeholder="Enter your email"
                   name="email"
-                  value={user.email}
+                  value={credentials.email}
                   onChange={handleChange}
                   required
                   className="dark:border-gray-600 dark:bg-gray-900"
                 />
               </div>
+
               <div className="relative">
                 <Label>Password</Label>
                 <Input
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   name="password"
-                  value={user.password}
+                  value={credentials.password}
                   onChange={handleChange}
                   required
                   className="dark:border-gray-600 dark:bg-gray-900"
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowPassword(!showPassword);
+                  }}
                   className="absolute right-3 top-6 text-gray-500"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
+
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? (
                   <>
@@ -128,6 +134,7 @@ const Login = () => {
                   "Login"
                 )}
               </Button>
+
               <p className="text-center text-gray-600 dark:text-gray-300">
                 Don't have an account?{" "}
                 <Link to="/signup">

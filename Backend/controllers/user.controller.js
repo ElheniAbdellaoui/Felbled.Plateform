@@ -15,6 +15,7 @@ export const register = async (req, res) => {
   try {
     const { firstName, lastName, email, password, userRole } = req.body;
 
+    // Validation des champs
     if (!firstName || !lastName || !email || !password) {
       return res.status(400).json({
         success: false,
@@ -22,6 +23,7 @@ export const register = async (req, res) => {
       });
     }
 
+    // Vérifier si l'utilisateur existe déjà
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({
@@ -30,8 +32,10 @@ export const register = async (req, res) => {
       });
     }
 
+    // Hash du mot de passe
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Création utilisateur
     const user = await User.create({
       firstName,
       lastName,
@@ -43,20 +47,19 @@ export const register = async (req, res) => {
     const safeUser = user.toObject();
     delete safeUser.password;
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: "Inscription réussie",
       user: safeUser,
     });
   } catch (error) {
     console.error("❌ Erreur register:", error.message);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Erreur serveur lors de l'inscription",
     });
   }
 };
-
 // LOGIN
 export const login = async (req, res) => {
   console.log("🔐 login body:", req.body);
@@ -71,8 +74,8 @@ export const login = async (req, res) => {
       });
     }
 
-    // Chercher user par email
-    const user = await User.findOne({ email });
+    // Chercher user par email, inclure le mot de passe si select:false dans le schema
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res.status(400).json({
         success: false,
@@ -89,7 +92,7 @@ export const login = async (req, res) => {
       });
     }
 
-    // Générer un token JWT
+    // Générer JWT
     const token = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.SECRET_KEY,
@@ -99,7 +102,7 @@ export const login = async (req, res) => {
     const safeUser = user.toObject();
     delete safeUser.password;
 
-    res
+    return res
       .status(200)
       .cookie("token", token, {
         httpOnly: true,
@@ -113,10 +116,11 @@ export const login = async (req, res) => {
         user: safeUser,
       });
   } catch (error) {
-    console.error("❌ Erreur login:", error.message);
-    res.status(500).json({
+    console.error("❌ Erreur login:", error);
+    return res.status(500).json({
       success: false,
       message: "Erreur serveur lors de la connexion",
+      error: error.message,
     });
   }
 };

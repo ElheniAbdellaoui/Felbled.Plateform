@@ -13,8 +13,8 @@ import { Button } from "../components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import axios from "axios";
-import { setLoading } from "../redux/authSlice";
 import { useDispatch, useSelector } from "react-redux";
+import { setLoading } from "../redux/authSlice";
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -22,16 +22,14 @@ const Signup = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  // ✅ état unique pour l'utilisateur
   const [user, setUser] = useState({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
-    userRole: "User", // valeur par défaut
+    userRole: "User",
   });
 
-  // ✅ fonction générique pour inputs + select
   const handleChange = (e) => {
     const { name, value } = e.target;
     setUser((prev) => ({ ...prev, [name]: value }));
@@ -55,8 +53,9 @@ const Signup = () => {
           withCredentials: true,
         }
       );
+
       if (res.data?.success) {
-        toast.success(res.data?.message || "Inscription réussie");
+        toast.success(res.data?.message);
         navigate("/login");
       }
     } catch (err) {
@@ -71,7 +70,7 @@ const Signup = () => {
   return (
     <div className="flex h-screen md:pt-14 md:h-[760px]">
       <div className="hidden md:block">
-        <img src={auth} alt="" className="h-[700px]" />
+        <img src={auth} alt="auth" className="h-[700px]" />
       </div>
       <div className="flex justify-center items-center flex-1 px-4 md:px-0">
         <Card className="w-full max-w-md p-6 shadow-lg rounded-2xl dark:bg-gray-800 dark:border-gray-600">
@@ -129,15 +128,16 @@ const Signup = () => {
                   onChange={handleChange}
                 />
                 <button
-                  onClick={() => setShowPassword(!showPassword)}
                   type="button"
                   className="absolute right-3 top-6 text-gray-500"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowPassword(!showPassword);
+                  }}
                 >
-                  {showPassword ? <EyeOff size="20" /> : <Eye size="20" />}
+                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-
-              {/* ✅ select lié directement à user.userRole */}
               <div>
                 <Label>Role</Label>
                 <select
@@ -150,12 +150,11 @@ const Signup = () => {
                   <option value="Professeur">Professeur</option>
                 </select>
               </div>
-
               <Button type="submit" className="w-full">
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 w-4 h-4 animate-spin" />
-                    please wait
+                    Please wait
                   </>
                 ) : (
                   "Sign Up"
