@@ -13,17 +13,15 @@ export const register = async (req, res) => {
   console.log("📩 register body:", req.body);
 
   try {
-    const { name, email, password } = req.body;
+    const { firstName, lastName, email, password, userRole } = req.body;
 
-    // Validation
-    if (!name || !email || !password) {
+    if (!firstName || !lastName || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Tous les champs (name, email, password) sont requis",
+        message: "Tous les champs sont requis",
       });
     }
 
-    // Vérifier si email existe déjà
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({
@@ -32,17 +30,16 @@ export const register = async (req, res) => {
       });
     }
 
-    // Hash du mot de passe
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Création utilisateur
     const user = await User.create({
-      name,
+      firstName,
+      lastName,
       email,
       password: hashedPassword,
+      role: userRole || "User",
     });
 
-    // Supprimer password du retour
     const safeUser = user.toObject();
     delete safeUser.password;
 
@@ -62,21 +59,20 @@ export const register = async (req, res) => {
 
 // LOGIN
 export const login = async (req, res) => {
-  console.log("📩 login body:", req.body);
+  console.log("🔐 login body:", req.body);
 
   try {
     const { email, password } = req.body;
 
-    // Validation
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "Email et mot de passe sont requis",
+        message: "Tous les champs sont requis",
       });
     }
 
-    // Vérifier si l'utilisateur existe
-    let user = await User.findOne({ email });
+    // Chercher user par email
+    const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({
         success: false,
@@ -84,7 +80,7 @@ export const login = async (req, res) => {
       });
     }
 
-    // Vérifier le mot de passe
+    // Vérifier mot de passe
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(400).json({
@@ -100,26 +96,24 @@ export const login = async (req, res) => {
       { expiresIn: "1d" }
     );
 
-    // Supprimer le password du retour
     const safeUser = user.toObject();
     delete safeUser.password;
 
-    // Envoyer réponse
     res
       .status(200)
       .cookie("token", token, {
-        maxAge: 24 * 60 * 60 * 1000, // 1 jour
         httpOnly: true,
         sameSite: "strict",
         secure: process.env.NODE_ENV === "production",
+        maxAge: 24 * 60 * 60 * 1000, // 1 jour
       })
       .json({
         success: true,
-        message: `Bienvenue ${safeUser.name}`,
+        message: `Bienvenue ${user.firstName} ${user.lastName}`,
         user: safeUser,
       });
   } catch (error) {
-    console.error("❌ LOGIN ERROR:", error.message);
+    console.error("❌ Erreur login:", error.message);
     res.status(500).json({
       success: false,
       message: "Erreur serveur lors de la connexion",
