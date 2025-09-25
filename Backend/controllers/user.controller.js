@@ -8,104 +8,121 @@ import getDataUri from "../utils/dataUri.js"; // ✅ importer la fonction
 import cloudinary from "cloudinary"; // Assurez-vous que cloudinary est bien configuré
 import { sendEmail } from "../utils/sendEmail.js";
 
+// REGISTER
 export const register = async (req, res) => {
+  console.log("📩 register body:", req.body);
+
   try {
     const { name, email, password } = req.body;
 
+    // Validation
     if (!name || !email || !password) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Tous les champs sont requis" });
+      return res.status(400).json({
+        success: false,
+        message: "Tous les champs (name, email, password) sont requis",
+      });
     }
 
+    // Vérifier si email existe déjà
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Cet email est déjà utilisé" });
+      return res.status(400).json({
+        success: false,
+        message: "Cet email est déjà utilisé",
+      });
     }
 
+    // Hash du mot de passe
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Création utilisateur
     const user = await User.create({
       name,
       email,
       password: hashedPassword,
     });
 
+    // Supprimer password du retour
+    const safeUser = user.toObject();
+    delete safeUser.password;
+
     res.status(201).json({
       success: true,
       message: "Inscription réussie",
-      user,
+      user: safeUser,
     });
   } catch (error) {
-    console.error("❌ Erreur register:", error); // <--- LOG utile
+    console.error("❌ Erreur register:", error.message);
     res.status(500).json({
       success: false,
       message: "Erreur serveur lors de l'inscription",
-      error: error.message,
     });
   }
 };
 
+// LOGIN
 export const login = async (req, res) => {
-  console.log("🔐 Login function called", req.body);
+  console.log("📩 login body:", req.body);
+
   try {
     const { email, password } = req.body;
 
+    // Validation
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: "All fields are required",
+        message: "Email et mot de passe sont requis",
       });
     }
 
+    // Vérifier si l'utilisateur existe
     let user = await User.findOne({ email });
-
     if (!user) {
       return res.status(400).json({
         success: false,
-        message: "Incorrect email or password",
+        message: "Email ou mot de passe incorrect",
       });
     }
 
+    // Vérifier le mot de passe
     const isPasswordValid = await bcrypt.compare(password, user.password);
-
     if (!isPasswordValid) {
       return res.status(400).json({
         success: false,
-        message: "Invalid Credentials",
+        message: "Email ou mot de passe incorrect",
       });
     }
-    console.log("SECRET_KEY:", process.env.SECRET_KEY);
 
+    // Générer un token JWT
     const token = jwt.sign(
       { userId: user._id, role: user.role },
       process.env.SECRET_KEY,
       { expiresIn: "1d" }
     );
 
+    // Supprimer le password du retour
     const safeUser = user.toObject();
     delete safeUser.password;
 
+    // Envoyer réponse
     res
       .status(200)
       .cookie("token", token, {
-        maxAge: 24 * 60 * 60 * 1000,
+        maxAge: 24 * 60 * 60 * 1000, // 1 jour
         httpOnly: true,
         sameSite: "strict",
         secure: process.env.NODE_ENV === "production",
       })
       .json({
         success: true,
-        message: `Welcome back ${user.firstName}`,
+        message: `Bienvenue ${safeUser.name}`,
         user: safeUser,
       });
   } catch (error) {
-    console.error("LOGIN ERROR:", error); // pour afficher le vrai message d’erreur
-    return res.status(500).json({
+    console.error("❌ LOGIN ERROR:", error.message);
+    res.status(500).json({
       success: false,
-      message: "Failed to login",
+      message: "Erreur serveur lors de la connexion",
     });
   }
 };
