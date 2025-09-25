@@ -8,7 +8,7 @@ const userSchema = new mongoose.Schema(
     firstName: { type: String, required: true },
     lastName: { type: String, default: "" },
     email: { type: String, required: true, unique: true, lowercase: true },
-    password: { type: String, required: true, select: true }, // ⚠️ doit rester sélectionnable pour login
+    password: { type: String, required: true, select: false }, // ⚡ sécurité
     role: {
       type: String,
       enum: ["user", "professeur", "admin"],
@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// 🔐 Hasher mot de passe avant save()
+// 🔐 Hash mot de passe avant save()
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
@@ -45,7 +45,7 @@ userSchema.methods.comparePassword = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
-// 🔄 Générer un token de reset password
+// 🔄 Générer un token reset password
 userSchema.methods.getResetToken = function () {
   const resetToken = crypto.randomBytes(20).toString("hex");
 
@@ -54,7 +54,7 @@ userSchema.methods.getResetToken = function () {
     .update(resetToken)
     .digest("hex");
 
-  this.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // 15 min
+  this.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
 
   return resetToken;
 };

@@ -10,118 +10,90 @@ import { sendEmail } from "../utils/sendEmail.js";
 
 // REGISTER
 export const register = async (req, res) => {
-  console.log("📩 register body:", req.body);
-
   try {
-    const { firstName, lastName, email, password, userRole } = req.body;
+    const { firstName, lastName, email, password, role } = req.body;
 
-    // Validation des champs
-    if (!firstName || !lastName || !email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Tous les champs sont requis",
-      });
+    // Vérif si email existe déjà
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "Cet email est déjà utilisé." });
     }
 
-    // Vérifier si l'utilisateur existe déjà
-    const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({
-        success: false,
-        message: "Cet email est déjà utilisé",
-      });
-    }
-
-    // Hash du mot de passe
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Création utilisateur
+    // Création user (password brut → hashé par pre("save"))
     const user = await User.create({
       firstName,
       lastName,
       email,
-      password: hashedPassword,
-      role: userRole || "User",
+      password,
+      role: role || "user",
     });
 
-    const safeUser = user.toObject();
-    delete safeUser.password;
+    // Génération JWT
+    const token = user.getJWT();
 
-    return res.status(201).json({
+    // 📧 Envoi mail de bienvenue (facultatif)
+    await sendEmail({
+      to: user.email,
+      subject: "Bienvenue sur Felbled Platform 🎉",
+      html: `<h2>Bonjour ${user.firstName},</h2>
+             <p>Merci de vous être inscrit sur <b>Felbled Platform</b>.</p>`,
+    });
+
+    res.status(201).json({
       success: true,
-      message: "Inscription réussie",
-      user: safeUser,
+      token,
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+      },
     });
   } catch (error) {
-    console.error("❌ Erreur register:", error.message);
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur lors de l'inscription",
-    });
+    console.error("Erreur register:", error);
+    res.status(500).json({ message: "Erreur serveur lors de l'inscription." });
   }
 };
-// LOGIN
-export const login = async (req, res) => {
-  console.log("🔐 login body:", req.body);
 
+// 📌 Login
+export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: "Tous les champs sont requis",
-      });
-    }
-
-    // Chercher user par email, inclure le mot de passe si select:false dans le schema
+    // Vérif user
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: "Email ou mot de passe incorrect",
-      });
+      return res
+        .status(400)
+        .json({ message: "Email ou mot de passe invalide." });
     }
 
-    // Vérifier mot de passe
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return res.status(400).json({
-        success: false,
-        message: "Email ou mot de passe incorrect",
-      });
+    // Vérif password
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      return res
+        .status(400)
+        .json({ message: "Email ou mot de passe invalide." });
     }
 
     // Générer JWT
-    const token = jwt.sign(
-      { userId: user._id, role: user.role },
-      process.env.SECRET_KEY,
-      { expiresIn: "1d" }
-    );
+    const token = user.getJWT();
 
-    const safeUser = user.toObject();
-    delete safeUser.password;
-
-    return res
-      .status(200)
-      .cookie("token", token, {
-        httpOnly: true,
-        sameSite: "strict",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 24 * 60 * 60 * 1000, // 1 jour
-      })
-      .json({
-        success: true,
-        message: `Bienvenue ${user.firstName} ${user.lastName}`,
-        user: safeUser,
-      });
-  } catch (error) {
-    console.error("❌ Erreur login:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Erreur serveur lors de la connexion",
-      error: error.message,
+    res.status(200).json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        role: user.role,
+      },
     });
+  } catch (error) {
+    console.error("Erreur login:", error);
+    res.status(500).json({ message: "Erreur serveur lors de la connexion." });
   }
 };
 
