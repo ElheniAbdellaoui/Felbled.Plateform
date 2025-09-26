@@ -82,7 +82,7 @@ export const login = async (req, res) => {
 
     // ✅ Générer JWT directement
     const token = jwt.sign(
-      { userId: user._id }, // userId pour correspondre au middleware
+      { id: user._id }, // userId pour correspondre au middleware
       process.env.SECRET_KEY,
       { expiresIn: "7d" }
     );

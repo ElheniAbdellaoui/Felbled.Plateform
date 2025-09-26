@@ -1,5 +1,5 @@
 import { Card } from "../components/ui/card";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import userLogo from "../assets/user.jpg";
 import { Avatar, AvatarImage } from "../components/ui/avatar";
 import { Link } from "react-router-dom";
@@ -31,17 +31,36 @@ const Profile = () => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const { user } = useSelector((store) => store.auth);
+
+  // ✅ état initial vide (pas dépendant de user)
   const [input, setInput] = useState({
-    firstName: user?.firstName,
-    lastName: user?.lastName,
-    occupation: user?.occupation,
-    bio: user?.bio,
-    facebook: user?.facebook,
-    linkedin: user?.linkedin,
-    github: user?.github,
-    instagram: user?.instagram,
-    file: user?.photoUrl,
+    firstName: "",
+    lastName: "",
+    occupation: "",
+    bio: "",
+    facebook: "",
+    linkedin: "",
+    github: "",
+    instagram: "",
+    file: "",
   });
+
+  // ✅ remplir quand user est chargé
+  useEffect(() => {
+    if (user) {
+      setInput({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        occupation: user.occupation || "",
+        bio: user.bio || "",
+        facebook: user.facebook || "",
+        linkedin: user.linkedin || "",
+        github: user.github || "",
+        instagram: user.instagram || "",
+        file: user.photoUrl || "",
+      });
+    }
+  }, [user]);
 
   const changeEventHandler = (e) => {
     const { name, value } = e.target;
@@ -73,7 +92,7 @@ const Profile = () => {
     try {
       setLoading(true);
 
-      const token = localStorage.getItem("token"); // ⚡ récupère le JWT stocké au login
+      const token = localStorage.getItem("token"); // ⚡ récupère le JWT
 
       const res = await axios.put(
         `https://felblad-plateform.onrender.com/api/v1/user/profile/update`,
@@ -83,7 +102,7 @@ const Profile = () => {
             "Content-Type": "multipart/form-data",
             Authorization: `Bearer ${token}`, // ⚡ ajoute le token
           },
-          withCredentials: true, // si tu utilises aussi cookies
+          withCredentials: true,
         }
       );
 
@@ -107,6 +126,7 @@ const Profile = () => {
           {/* image section */}
           <div className="flex flex-col items-center justify-center md:w-[400px]">
             <Avatar className="w-40 h-40 border-2">
+              {/* ✅ fallback si pas de photo */}
               <AvatarImage src={user?.photoUrl || userLogo} />
             </Avatar>
             <h1 className="text-center font-semibold text-xl text-gray-700 dark:text-gray-300 my-3">
@@ -132,7 +152,7 @@ const Profile = () => {
             <h1 className="font-bold text-center md:text-start text-4xl mb-7">
               Welcome {user?.firstName}!
             </h1>
-            <p className="">
+            <p>
               <span className="font-semibold">Email : </span>
               {user?.email}
             </p>
@@ -158,9 +178,7 @@ const Profile = () => {
                 <div className="grid gap-4 py-4">
                   <div className="flex gap-2">
                     <div>
-                      <Label htmlFor="name" className="text-right">
-                        First Name
-                      </Label>
+                      <Label>First Name</Label>
                       <Input
                         id="firstName"
                         name="firstName"
@@ -172,9 +190,7 @@ const Profile = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="name" className="text-right">
-                        Last Name
-                      </Label>
+                      <Label>Last Name</Label>
                       <Input
                         id="lastName"
                         name="lastName"
@@ -235,9 +251,7 @@ const Profile = () => {
                     </div>
                   </div>
                   <div>
-                    <Label htmlFor="name" className="text-right">
-                      Description
-                    </Label>
+                    <Label>Description</Label>
                     <Textarea
                       id="bio"
                       value={input.bio}
@@ -248,9 +262,7 @@ const Profile = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="name" className="text-right">
-                      Picture
-                    </Label>
+                    <Label>Picture</Label>
                     <Input
                       id="file"
                       type="file"
