@@ -18,5 +18,6 @@ router.get("/logout", logout);
 
 // Authentifié → mise à jour du profil
 router.put("/profile/update", isAuthenticated, singleUpload, updateProfile);
+router.get("/all-users", getAllUsers);
 
 export default router;

@@ -26,6 +26,7 @@ router.put(
   singleUpload,
   updateBlog
 );
+router.route("/:blogId", authorizeRoles("professeur")).patch(togglePublishBlog);
 
 // Admin → supprimer un blog
 router.delete(
@@ -34,7 +35,8 @@ router.delete(
   authorizeRoles("admin"),
   deleteBlog
 );
-
+//Admin-> get own blog
+router.get("/get-own-blogs", isAuthenticated, getOwnBlogs);
 // User → liker, commenter
 router.get(
   "/:id/like",
@@ -51,5 +53,6 @@ router.get(
 
 router.get("/get-all-blogs", getAllBlogs);
 router.get("/get-published-blogs", getPublishedBlog);
+router.get("/my-blogs/likes", isAuthenticated, getMyTotalBlogLikes);
 
 export default router;

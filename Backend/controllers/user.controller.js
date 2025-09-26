@@ -80,8 +80,12 @@ export const login = async (req, res) => {
         .json({ message: "Email ou mot de passe invalide." });
     }
 
-    // Générer JWT
-    const token = user.getJWT();
+    // ✅ Générer JWT directement
+    const token = jwt.sign(
+      { userId: user._id }, // userId pour correspondre au middleware
+      process.env.SECRET_KEY,
+      { expiresIn: "7d" }
+    );
 
     res.status(200).json({
       success: true,
@@ -99,7 +103,6 @@ export const login = async (req, res) => {
     res.status(500).json({ message: "Erreur serveur lors de la connexion." });
   }
 };
-
 // ===================== LOGOUT =====================
 export const logout = async (_, res) => {
   try {
