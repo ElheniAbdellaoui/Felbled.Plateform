@@ -57,6 +57,8 @@ const Signup = () => {
       if (res.data?.success) {
         toast.success(res.data?.message);
         navigate("/login");
+      } else {
+        toast.error(res.data.message);
       }
     } catch (err) {
       const msg =
@@ -162,8 +164,10 @@ const Signup = () => {
               </Button>
               <p className="text-center text-gray-600 dark:text-gray-300">
                 Already have an account?{" "}
-                <Link to="/login">
-                  <span className="underline cursor-pointer">Sign in</span>
+                <Link to={"/login"}>
+                  <span className="underline cursor-pointer hover:text-gray-800 dark:hover:text-gray-100">
+                    Sign in
+                  </span>
                 </Link>
               </p>
             </form>

@@ -3,12 +3,11 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 
-import getDataUri from "../utils/dataUri.js"; // ✅ importer la fonction
-
-import cloudinary from "cloudinary"; // Assurez-vous que cloudinary est bien configuré
+import getDataUri from "../utils/dataUri.js";
+import cloudinary from "cloudinary";
 import { sendEmail } from "../utils/sendEmail.js";
 
-// REGISTER
+// ===================== REGISTER =====================
 export const register = async (req, res) => {
   try {
     const { firstName, lastName, email, password, role } = req.body;
@@ -19,7 +18,7 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "Cet email est déjà utilisé." });
     }
 
-    // Création user (password brut → hashé par pre("save"))
+    // Création user (password sera hashé dans pre("save"))
     const user = await User.create({
       firstName,
       lastName,
@@ -31,13 +30,17 @@ export const register = async (req, res) => {
     // Génération JWT
     const token = user.getJWT();
 
-    // 📧 Envoi mail de bienvenue (facultatif)
-    await sendEmail({
-      to: user.email,
-      subject: "Bienvenue sur Felbled Platform 🎉",
-      html: `<h2>Bonjour ${user.firstName},</h2>
-             <p>Merci de vous être inscrit sur <b>Felbled Platform</b>.</p>`,
-    });
+    // Tentative d'envoi mail (facultatif)
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: "Bienvenue sur Felbled Platform 🎉",
+        html: `<h2>Bonjour ${user.firstName},</h2>
+               <p>Merci de vous être inscrit sur <b>Felbled Platform</b>.</p>`,
+      });
+    } catch (mailErr) {
+      console.warn("⚠️ Envoi email échoué:", mailErr.message);
+    }
 
     res.status(201).json({
       success: true,
@@ -56,7 +59,7 @@ export const register = async (req, res) => {
   }
 };
 
-// 📌 Login
+// ===================== LOGIN =====================
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -97,17 +100,20 @@ export const login = async (req, res) => {
   }
 };
 
+// ===================== LOGOUT =====================
 export const logout = async (_, res) => {
   try {
     return res.status(200).cookie("token", "", { maxAge: 0 }).json({
-      message: "logout successfully",
+      message: "Déconnexion réussie",
       success: true,
     });
   } catch (error) {
-    console.log(error);
+    console.log("Erreur logout:", error);
+    res.status(500).json({ message: "Erreur serveur lors de la déconnexion." });
   }
 };
 
+// ===================== UPDATE PROFILE =====================
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.id;
@@ -132,7 +138,7 @@ export const updateProfile = async (req, res) => {
     // si fichier uploadé
     if (req.file) {
       const fileUri = getDataUri(req.file);
-      const uploadRes = await cloudinary.uploader.upload(fileUri, {
+      const uploadRes = await cloudinary.v2.uploader.upload(fileUri, {
         folder: "user-profiles",
         resource_type: "auto",
       });
@@ -165,12 +171,13 @@ export const updateProfile = async (req, res) => {
   }
 };
 
+// ===================== GET ALL USERS =====================
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password"); // exclude password field
+    const users = await User.find().select("-password"); // exclure mot de passe
     res.status(200).json({
       success: true,
-      message: "User list fetched successfully",
+      message: "Liste des utilisateurs récupérée",
       total: users.length,
       users,
     });
@@ -178,60 +185,95 @@ export const getAllUsers = async (req, res) => {
     console.error("Error fetching user list:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to fetch users",
+      message: "Échec récupération utilisateurs",
     });
   }
 };
 
+// ===================== VERIFY EMAIL =====================
 export const verifyEmail = async (req, res) => {
-  const token = crypto
-    .createHash("sha256")
-    .update(req.params.token)
-    .digest("hex");
-  const user = await User.findOne({
-    verifyToken: token,
-    verifyTokenExpire: { $gt: Date.now() },
-  });
-  if (!user)
-    return res.status(400).json({ message: "Invalid or expired token" });
-  user.isVerified = true;
-  user.verifyToken = undefined;
-  await user.save();
-  res.json({ success: true, message: "Email verified" });
+  try {
+    const token = crypto
+      .createHash("sha256")
+      .update(req.params.token)
+      .digest("hex");
+
+    const user = await User.findOne({
+      verifyToken: token,
+      verifyTokenExpire: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Token invalide ou expiré" });
+    }
+
+    user.isVerified = true;
+    user.verifyToken = undefined;
+    await user.save();
+
+    res.json({ success: true, message: "Email vérifié" });
+  } catch (error) {
+    console.error("Erreur verifyEmail:", error);
+    res.status(500).json({ message: "Erreur serveur vérification email" });
+  }
 };
 
+// ===================== FORGOT PASSWORD =====================
 export const forgotPassword = async (req, res) => {
-  const user = await User.findOne({ email: req.body.email });
-  if (!user) return res.status(404).json({ message: "User not found" });
+  try {
+    const user = await User.findOne({ email: req.body.email });
+    if (!user)
+      return res.status(404).json({ message: "Utilisateur introuvable" });
 
-  const resetToken = user.getResetToken();
-  await user.save();
+    const resetToken = user.getResetToken();
+    await user.save();
 
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-  await sendEmail({
-    to: user.email,
-    subject: "Password Reset",
-    html: `<a href="${resetUrl}">Reset Password</a>`,
-  });
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: "Réinitialisation du mot de passe",
+        html: `<a href="${resetUrl}">Cliquez ici pour réinitialiser votre mot de passe</a>`,
+      });
+    } catch (mailErr) {
+      console.warn("⚠️ Email reset non envoyé:", mailErr.message);
+    }
 
-  res.json({ success: true, message: "Reset link sent" });
+    res.json({ success: true, message: "Lien de réinitialisation envoyé" });
+  } catch (error) {
+    console.error("Erreur forgotPassword:", error);
+    res.status(500).json({ message: "Erreur serveur forgot password" });
+  }
 };
 
+// ===================== RESET PASSWORD =====================
 export const resetPassword = async (req, res) => {
-  const token = crypto
-    .createHash("sha256")
-    .update(req.params.token)
-    .digest("hex");
-  const user = await User.findOne({
-    resetPasswordToken: token,
-    resetPasswordExpire: { $gt: Date.now() },
-  });
-  if (!user)
-    return res.status(400).json({ message: "Invalid or expired token" });
+  try {
+    const token = crypto
+      .createHash("sha256")
+      .update(req.params.token)
+      .digest("hex");
 
-  user.password = req.body.password;
-  user.resetPasswordToken = undefined;
-  user.resetPasswordExpire = undefined;
-  await user.save();
-  res.json({ success: true, message: "Password reset success" });
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Token invalide ou expiré" });
+    }
+
+    user.password = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: "Mot de passe réinitialisé avec succès",
+    });
+  } catch (error) {
+    console.error("Erreur resetPassword:", error);
+    res.status(500).json({ message: "Erreur serveur reset password" });
+  }
 };
