@@ -16,14 +16,25 @@ console.log("🔍 MONGO_URI chargée :", process.env.MONGO_URI);
 const app = express();
 
 // Middlewares
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:", "blob:"],
+        scriptSrc: ["'self'", "https://cdnjs.cloudflare.com"],
+        mediaSrc: ["'self'", "data:"],
+      },
+    },
+  })
+);
 app.use(compression());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: "https://felblad-plateform.onrender.com",
+    origin: ["https://felblad-plateform.onrender.com", "http://localhost:5173"],
     credentials: true,
   })
 );

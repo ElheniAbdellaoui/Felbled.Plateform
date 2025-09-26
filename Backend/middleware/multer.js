@@ -4,6 +4,6 @@ import multer from "multer";
 const storage = multer.memoryStorage();
 
 // ⚡ Middleware pour un seul fichier (champ "file")
-const singleUpload = multer({ storage }).single("file");
+const { singleUpload } = multer({ storage }).single("file");
 
-export default singleUpload;
+export { singleUpload };
