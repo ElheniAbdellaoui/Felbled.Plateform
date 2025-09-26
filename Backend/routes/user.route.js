@@ -7,7 +7,7 @@ import {
   updateProfile,
 } from "../controllers/user.controller.js";
 import { isAuthenticated } from "../middleware/isAuthenticated.js";
-import singleUpload from "../middleware/multer.js"; // ✅ correspond à export default
+import singleUpload from "../middleware/multer.js";
 
 const router = express.Router();
 
