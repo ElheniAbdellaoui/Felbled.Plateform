@@ -3,43 +3,36 @@ import User from "../models/user.model.js";
 
 export const isAuthenticated = async (req, res, next) => {
   try {
-    // 🔍 Chercher token soit dans cookie soit dans header
-    const token =
-      req.cookies?.token ||
-      (req.headers.authorization &&
-        req.headers.authorization.startsWith("Bearer") &&
-        req.headers.authorization.split(" ")[1]);
+    let token;
+
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
+    } else if (req.cookies?.token) {
+      token = req.cookies.token;
+    }
 
     if (!token) {
-      return res.status(401).json({
-        success: false,
-        message: "Accès refusé : token manquant",
-      });
+      return res
+        .status(401)
+        .json({ success: false, message: "Non authentifié" });
     }
 
-    // ✅ Vérifier le token
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
-
-    // ✅ Récupérer l’utilisateur sans le mot de passe
-    const user = await User.findById(decoded.userId).select("-password");
-
+    const user = await User.findById(decoded.id).select("-password");
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "Utilisateur introuvable",
-      });
+      return res
+        .status(401)
+        .json({ success: false, message: "Utilisateur non trouvé" });
     }
 
-    // Injecter les infos dans req
     req.user = user;
-    req.id = user._id; // pour updateProfile
-
+    req.id = user._id;
     next();
   } catch (error) {
-    console.error("❌ Auth error:", error.message);
-    return res.status(401).json({
-      success: false,
-      message: "Token invalide ou expiré",
-    });
+    console.error("Auth middleware error:", error);
+    return res.status(401).json({ success: false, message: "Token invalide" });
   }
 };

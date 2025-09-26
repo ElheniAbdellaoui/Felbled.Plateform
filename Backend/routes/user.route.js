@@ -7,8 +7,7 @@ import {
   updateProfile,
 } from "../controllers/user.controller.js";
 import { isAuthenticated } from "../middleware/isAuthenticated.js";
-import { authorizeRoles } from "../middleware/authorizeRoles.js";
-import { singleUpload } from "../middleware/multer.js";
+import singleUpload from "../middleware/multer.js";
 
 const router = express.Router();
 

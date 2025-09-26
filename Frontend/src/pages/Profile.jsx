@@ -72,29 +72,23 @@ const Profile = () => {
 
     try {
       setLoading(true);
-
-      const token = localStorage.getItem("token"); // ⚡ récupère le JWT stocké au login
-
       const res = await axios.put(
-        `https://felblad-plateform.onrender.com/api/v1/user/profile/update`,
+        `http://localhost:5173/api/v1/user/profile/update`,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`, // ⚡ ajoute le token
           },
-          withCredentials: true, // si tu utilises aussi cookies
+          withCredentials: true,
         }
       );
-
       if (res.data.success) {
         setOpen(false);
         toast.success(res.data.message);
         dispatch(setUser(res.data.user));
       }
     } catch (error) {
-      console.log("❌ Erreur update:", error.response?.data || error.message);
-      toast.error(error.response?.data?.message || "Update failed");
+      console.log(error);
     } finally {
       setLoading(false);
     }
