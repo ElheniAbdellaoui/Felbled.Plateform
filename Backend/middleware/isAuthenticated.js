@@ -5,18 +5,19 @@ export const isAuthenticated = async (req, res, next) => {
   try {
     let token;
 
-    // Vérifier d'abord le header Authorization
+    // 1️⃣ Vérifier le header Authorization
     if (
       req.headers.authorization &&
       req.headers.authorization.startsWith("Bearer")
     ) {
       token = req.headers.authorization.split(" ")[1];
     }
-    // Sinon vérifier les cookies
+    // 2️⃣ Vérifier les cookies si pas de header
     else if (req.cookies?.token) {
       token = req.cookies.token;
     }
 
+    // ⚠️ Pas de token
     if (!token) {
       return res.status(401).json({
         message: "User not authenticated",
@@ -24,18 +25,12 @@ export const isAuthenticated = async (req, res, next) => {
       });
     }
 
+    // Vérifier le token
     const decode = jwt.verify(token, process.env.SECRET_KEY);
+    const userId = decode.id || decode.userId; // fallback si tu changes la clé
 
-    if (!decode) {
-      return res.status(401).json({
-        message: "Invalid token",
-        success: false,
-      });
-    }
-
-    // ✅ Utilisez decode.id au lieu de decode.userId
-    const user = await User.findById(decode.id);
-
+    // Vérifier que l'utilisateur existe
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(401).json({
         message: "User not found",
@@ -43,11 +38,12 @@ export const isAuthenticated = async (req, res, next) => {
       });
     }
 
-    req.id = decode.id; // ✅ Changez aussi ici
+    // ✅ Ajouter info à la requête
+    req.id = userId;
     req.user = user;
     next();
   } catch (error) {
-    console.log("Auth error:", error);
+    console.log("Auth error:", error.message);
     return res.status(401).json({
       message: "Invalid token",
       success: false,

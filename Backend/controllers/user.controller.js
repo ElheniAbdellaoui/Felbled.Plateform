@@ -60,11 +60,12 @@ export const register = async (req, res) => {
 };
 
 // ===================== LOGIN =====================
+
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Vérif user
+    // Vérifier si l'utilisateur existe
     const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res
@@ -72,7 +73,7 @@ export const login = async (req, res) => {
         .json({ message: "Email ou mot de passe invalide." });
     }
 
-    // Vérif password
+    // Vérifier le mot de passe
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
       return res
@@ -80,26 +81,35 @@ export const login = async (req, res) => {
         .json({ message: "Email ou mot de passe invalide." });
     }
 
-    // ✅ Générer JWT directement
+    // Générer le token
     const token = jwt.sign(
-      { id: user._id }, // userId pour correspondre au middleware
+      { id: user._id }, // ⚡ clé `id` correspond au middleware
       process.env.SECRET_KEY,
       { expiresIn: "7d" }
     );
 
+    // ⚡ Optionnel : envoyer aussi dans un cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
+    });
+
     res.status(200).json({
       success: true,
-      token,
+      token, // Pour Postman et frontend
       user: {
         id: user._id,
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
         role: user.role,
+        photoUrl: user.photoUrl,
       },
     });
   } catch (error) {
-    console.error("Erreur login:", error);
+    console.error("Erreur login:", error.message);
     res.status(500).json({ message: "Erreur serveur lors de la connexion." });
   }
 };
