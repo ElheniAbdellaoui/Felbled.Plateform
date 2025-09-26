@@ -18,6 +18,7 @@ router.post("/login", login);
 router.get("/logout", logout);
 
 // Authentifié → mise à jour du profil
+
 router.put("/profile/update", isAuthenticated, singleUpload, updateProfile);
 
 export default router;
