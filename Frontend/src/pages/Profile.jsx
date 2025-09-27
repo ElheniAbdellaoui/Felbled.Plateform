@@ -1,5 +1,5 @@
 import { Card } from "../components/ui/card";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import userLogo from "../assets/user.jpg";
 import { Avatar, AvatarImage } from "../components/ui/avatar";
 import { Link } from "react-router-dom";
@@ -26,22 +26,38 @@ import TotalProperty from "@/components/TotalProperty";
 
 const Profile = () => {
   const dispatch = useDispatch();
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const { user } = useSelector((store) => store.auth);
 
-  // ✅ valeurs initiales avec fallback
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [input, setInput] = useState({
-    firstName: user?.firstName || "",
-    lastName: user?.lastName || "",
-    occupation: user?.occupation || "",
-    bio: user?.bio || "",
-    facebook: user?.facebook || "",
-    linkedin: user?.linkedin || "",
-    github: user?.github || "",
-    instagram: user?.instagram || "",
-    file: null, // ⚡ pas user.photoUrl (ce n’est pas un File)
+    firstName: "",
+    lastName: "",
+    occupation: "",
+    bio: "",
+    facebook: "",
+    linkedin: "",
+    github: "",
+    instagram: "",
+    file: null,
   });
+
+  // Charger les données utilisateur quand le composant monte
+  useEffect(() => {
+    if (user) {
+      setInput({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        occupation: user.occupation || "",
+        bio: user.bio || "",
+        facebook: user.facebook || "",
+        linkedin: user.linkedin || "",
+        github: user.github || "",
+        instagram: user.instagram || "",
+        file: null,
+      });
+    }
+  }, [user]);
 
   const changeEventHandler = (e) => {
     const { name, value } = e.target;
@@ -52,7 +68,7 @@ const Profile = () => {
   };
 
   const changeFileHandler = (e) => {
-    setInput({ ...input, file: e.target.files?.[0] });
+    setInput((prev) => ({ ...prev, file: e.target.files?.[0] }));
   };
 
   const submitHandler = async (e) => {
@@ -73,31 +89,29 @@ const Profile = () => {
     formData.append("linkedin", input.linkedin);
     formData.append("instagram", input.instagram);
     formData.append("github", input.github);
-    if (input?.file) {
-      formData.append("file", input?.file);
-    }
+    if (input.file) formData.append("file", input.file);
 
     try {
       setLoading(true);
       const res = await axios.put(
-        `https://felblad-plateform.onrender.com/api/v1/user/profile/update`,
+        "https://felblad-plateform.onrender.com/api/v1/user/profile/update",
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`, // ✅ ajout du token
+            Authorization: `Bearer ${token}`,
           },
           withCredentials: true,
         }
       );
 
       if (res.data.success) {
-        setOpen(false);
         toast.success(res.data.message);
-        dispatch(setUser(res.data.user));
+        dispatch(setUser(res.data.user)); // Mettre à jour le store
+        setOpen(false);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       toast.error(
         error.response?.data?.message || "Erreur lors de la mise à jour"
       );
@@ -108,9 +122,9 @@ const Profile = () => {
 
   return (
     <div className="pt-20 md:ml-[320px] md:h-screen">
-      <div className="max-w-6xl mx-auto mt-8 ">
+      <div className="max-w-6xl mx-auto mt-8">
         <Card className="flex md:flex-row flex-col gap-10 p-6 md:p-10 dark:bg-gray-800 mx-4 md:mx-0">
-          {/* image section */}
+          {/* Image section */}
           <div className="flex flex-col items-center justify-center md:w-[400px]">
             <Avatar className="w-40 h-40 border-2">
               <AvatarImage src={user?.photoUrl || userLogo} />
@@ -142,17 +156,17 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* info section */}
+          {/* Info section */}
           <div>
             <h1 className="font-bold text-center md:text-start text-4xl mb-7">
               Welcome {user?.firstName || "User"}!
             </h1>
-            <p className="">
+            <p>
               <span className="font-semibold">Email : </span>
               {user?.email || "—"}
             </p>
             <div className="flex flex-col gap-2 items-start justify-start my-5">
-              <Label className="">About Me</Label>
+              <Label>About Me</Label>
               <p className="border dark:border-gray-600 p-6 rounded-lg">
                 {user?.bio ||
                   "I'm a passionate web developer and content creator focused on frontend technologies."}
@@ -162,7 +176,7 @@ const Profile = () => {
             {/* Dialog Edit Profile */}
             <Dialog open={open} onOpenChange={setOpen}>
               <Button onClick={() => setOpen(true)}>Edit Profile</Button>
-              <DialogContent className="md:w-[425px] ">
+              <DialogContent className="md:w-[425px]">
                 <DialogHeader>
                   <DialogTitle className="text-center">
                     Edit Profile
@@ -171,29 +185,26 @@ const Profile = () => {
                     Make changes to your profile here.
                   </DialogDescription>
                 </DialogHeader>
-                <div className="grid gap-4 py-4">
+                <form className="grid gap-4 py-4" onSubmit={submitHandler}>
                   <div className="flex gap-2">
                     <div>
                       <Label>First Name</Label>
                       <Input
-                        id="firstName"
                         name="firstName"
                         value={input.firstName}
                         onChange={changeEventHandler}
                         placeholder="First Name"
-                        type="text"
-                        className="col-span-3 text-gray-500"
+                        required
                       />
                     </div>
                     <div>
                       <Label>Last Name</Label>
                       <Input
-                        id="lastName"
                         name="lastName"
                         value={input.lastName}
                         onChange={changeEventHandler}
                         placeholder="Last Name"
-                        className="col-span-3 text-gray-500"
+                        required
                       />
                     </div>
                   </div>
@@ -202,82 +213,72 @@ const Profile = () => {
                     <div>
                       <Label>Facebook</Label>
                       <Input
-                        id="facebook"
                         name="facebook"
                         value={input.facebook}
                         onChange={changeEventHandler}
                         placeholder="Enter a URL"
-                        className="col-span-3 text-gray-500"
                       />
                     </div>
                     <div>
                       <Label>Instagram</Label>
                       <Input
-                        id="instagram"
                         name="instagram"
                         value={input.instagram}
                         onChange={changeEventHandler}
                         placeholder="Enter a URL"
-                        className="col-span-3 text-gray-500"
                       />
                     </div>
                   </div>
+
                   <div className="flex gap-2">
                     <div>
                       <Label>Linkedin</Label>
                       <Input
-                        id="linkedin"
                         name="linkedin"
                         value={input.linkedin}
                         onChange={changeEventHandler}
                         placeholder="Enter a URL"
-                        className="col-span-3 text-gray-500"
                       />
                     </div>
                     <div>
                       <Label>Github</Label>
                       <Input
-                        id="github"
                         name="github"
                         value={input.github}
                         onChange={changeEventHandler}
                         placeholder="Enter a URL"
-                        className="col-span-3 text-gray-500"
                       />
                     </div>
                   </div>
+
                   <div>
                     <Label>Description</Label>
                     <Textarea
-                      id="bio"
+                      name="bio"
                       value={input.bio}
                       onChange={changeEventHandler}
-                      name="bio"
                       placeholder="Enter a description"
-                      className="col-span-3 text-gray-500"
                     />
                   </div>
+
                   <div>
                     <Label>Picture</Label>
                     <Input
-                      id="file"
                       type="file"
                       accept="image/*"
                       onChange={changeFileHandler}
-                      className="w-[277px]"
                     />
                   </div>
-                </div>
-                <DialogFooter>
-                  {loading ? (
-                    <Button disabled>
-                      <Loader2 className="mr-2 w-4 h-4 animate-spin" /> Please
-                      wait
+
+                  <DialogFooter>
+                    <Button type="submit" disabled={loading}>
+                      {loading && (
+                        <Loader2 className="mr-2 w-4 h-4 animate-spin" />
+                      )}
+                      {loading ? "Please wait" : "Save Changes"}
                     </Button>
-                  ) : (
-                    <Button onClick={submitHandler}>Save Changes</Button>
-                  )}
-                </DialogFooter>
+                  </DialogFooter>
+                </form>
               </DialogContent>
             </Dialog>
           </div>
