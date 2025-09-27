@@ -11,9 +11,9 @@ const ResetPassword = () => {
   const handleReset = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(
+      const res = await axios.put(
         `https://felblad-plateform.onrender.com/api/v1/user/reset-password/${token}`,
-        { password }
+        { newPassword: password }
       );
       toast.success(res.data.message);
       navigate("/login");

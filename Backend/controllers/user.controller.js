@@ -206,15 +206,34 @@ export const getAllUsers = async (req, res) => {
 // ===================== VERIFY EMAIL =====================
 export const verifyEmail = async (req, res) => {
   try {
+    console.log("🔍 Token reçu brut:", req.params.token);
+
     const token = crypto
       .createHash("sha256")
       .update(req.params.token)
       .digest("hex");
 
+    console.log("🔍 Token hashé:", token);
+
+    // Vérifiez tous les utilisateurs avec un verifyToken
+    const allUsersWithToken = await User.find(
+      {
+        verifyToken: { $exists: true },
+      },
+      "email verifyToken verifyTokenExpire"
+    );
+
+    console.log(
+      "👥 Utilisateurs avec token de vérification:",
+      allUsersWithToken
+    );
+
     const user = await User.findOne({
       verifyToken: token,
       verifyTokenExpire: { $gt: Date.now() },
     });
+
+    console.log("👤 Utilisateur trouvé:", user ? "✅ OUI" : "❌ NON");
 
     if (!user) {
       return res.status(400).json({ message: "Token invalide ou expiré" });
@@ -222,6 +241,7 @@ export const verifyEmail = async (req, res) => {
 
     user.isVerified = true;
     user.verifyToken = undefined;
+    user.verifyTokenExpire = undefined;
     await user.save();
 
     res.json({ success: true, message: "Email vérifié" });
