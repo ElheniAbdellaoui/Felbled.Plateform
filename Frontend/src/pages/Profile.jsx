@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Label } from "../components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+
 import {
   Dialog,
   DialogContent,
@@ -25,11 +26,11 @@ import TotalProperty from "@/components/TotalProperty";
 
 const Profile = () => {
   const dispatch = useDispatch();
-  const { user } = useSelector((store) => store.auth);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { user } = useSelector((store) => store.auth);
 
-  // ⚡ initialisation sécurisée : si user est null, valeurs par défaut
+  // ✅ valeurs initiales avec fallback
   const [input, setInput] = useState({
     firstName: user?.firstName || "",
     lastName: user?.lastName || "",
@@ -39,16 +40,19 @@ const Profile = () => {
     linkedin: user?.linkedin || "",
     github: user?.github || "",
     instagram: user?.instagram || "",
-    file: null,
+    file: null, // ⚡ pas user.photoUrl (ce n’est pas un File)
   });
 
   const changeEventHandler = (e) => {
     const { name, value } = e.target;
-    setInput((prev) => ({ ...prev, [name]: value }));
+    setInput((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const changeFileHandler = (e) => {
-    setInput((prev) => ({ ...prev, file: e.target.files?.[0] }));
+    setInput({ ...input, file: e.target.files?.[0] });
   };
 
   const submitHandler = async (e) => {
@@ -69,39 +73,34 @@ const Profile = () => {
     formData.append("linkedin", input.linkedin);
     formData.append("instagram", input.instagram);
     formData.append("github", input.github);
-    if (input.file) formData.append("file", input.file);
+    if (input?.file) {
+      formData.append("file", input?.file);
+    }
 
     try {
       setLoading(true);
       const res = await axios.put(
-        "https://felblad-plateform.onrender.com/api/v1/user/profile/update",
+        `https://felblad-plateform.onrender.com/api/v1/user/profile/update`,
         formData,
         {
           headers: {
             "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // ✅ ajout du token
           },
           withCredentials: true,
         }
       );
 
       if (res.data.success) {
-        dispatch(setUser(res.data.user));
-        toast.success(res.data.message);
         setOpen(false);
+        toast.success(res.data.message);
+        dispatch(setUser(res.data.user));
       }
     } catch (error) {
-      console.log(
-        "Erreur update profile:",
-        error.response?.data || error.message
+      console.log(error);
+      toast.error(
+        error.response?.data?.message || "Erreur lors de la mise à jour"
       );
-      toast.error(error.response?.data?.message || "Update failed");
-
-      if (error.response?.status === 401) {
-        localStorage.removeItem("token");
-        dispatch(setUser(null));
-        toast.error("Session expirée, veuillez vous reconnecter !");
-      }
     } finally {
       setLoading(false);
     }
@@ -120,18 +119,26 @@ const Profile = () => {
               {user?.occupation || "Mern Stack Developer"}
             </h1>
             <div className="flex gap-4 items-center">
-              <Link>
-                <FaFacebook className="w-6 h-6 text-gray-800 dark:text-gray-300" />
-              </Link>
-              <Link to={`${user?.linkedin}`} target="_blank">
-                <FaLinkedin className="w-6 h-6 dark:text-gray-300 text-gray-800" />
-              </Link>
-              <Link to={`${user?.github}`} target="_blank">
-                <FaGithub className="w-6 h-6 dark:text-gray-300 text-gray-800" />
-              </Link>
-              <Link>
-                <FaInstagram className="w-6 h-6 text-gray-800 dark:text-gray-300" />
-              </Link>
+              {user?.facebook && (
+                <Link to={user.facebook} target="_blank">
+                  <FaFacebook className="w-6 h-6 text-gray-800 dark:text-gray-300" />
+                </Link>
+              )}
+              {user?.linkedin && (
+                <Link to={user.linkedin} target="_blank">
+                  <FaLinkedin className="w-6 h-6 dark:text-gray-300 text-gray-800" />
+                </Link>
+              )}
+              {user?.github && (
+                <Link to={user.github} target="_blank">
+                  <FaGithub className="w-6 h-6 dark:text-gray-300 text-gray-800" />
+                </Link>
+              )}
+              {user?.instagram && (
+                <Link to={user.instagram} target="_blank">
+                  <FaInstagram className="w-6 h-6 text-gray-800 dark:text-gray-300" />
+                </Link>
+              )}
             </div>
           </div>
 
@@ -140,22 +147,22 @@ const Profile = () => {
             <h1 className="font-bold text-center md:text-start text-4xl mb-7">
               Welcome {user?.firstName || "User"}!
             </h1>
-            <p>
+            <p className="">
               <span className="font-semibold">Email : </span>
               {user?.email || "—"}
             </p>
             <div className="flex flex-col gap-2 items-start justify-start my-5">
-              <Label>About Me</Label>
+              <Label className="">About Me</Label>
               <p className="border dark:border-gray-600 p-6 rounded-lg">
                 {user?.bio ||
-                  "I'm a passionate web developer focused on frontend technologies."}
+                  "I'm a passionate web developer and content creator focused on frontend technologies."}
               </p>
             </div>
 
             {/* Dialog Edit Profile */}
             <Dialog open={open} onOpenChange={setOpen}>
               <Button onClick={() => setOpen(true)}>Edit Profile</Button>
-              <DialogContent className="md:w-[425px]">
+              <DialogContent className="md:w-[425px] ">
                 <DialogHeader>
                   <DialogTitle className="text-center">
                     Edit Profile
@@ -164,27 +171,29 @@ const Profile = () => {
                     Make changes to your profile here.
                   </DialogDescription>
                 </DialogHeader>
-
                 <div className="grid gap-4 py-4">
                   <div className="flex gap-2">
                     <div>
-                      <Label htmlFor="firstName">First Name</Label>
+                      <Label>First Name</Label>
                       <Input
                         id="firstName"
                         name="firstName"
                         value={input.firstName}
                         onChange={changeEventHandler}
                         placeholder="First Name"
+                        type="text"
+                        className="col-span-3 text-gray-500"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="lastName">Last Name</Label>
+                      <Label>Last Name</Label>
                       <Input
                         id="lastName"
                         name="lastName"
                         value={input.lastName}
                         onChange={changeEventHandler}
                         placeholder="Last Name"
+                        className="col-span-3 text-gray-500"
                       />
                     </div>
                   </div>
@@ -193,67 +202,75 @@ const Profile = () => {
                     <div>
                       <Label>Facebook</Label>
                       <Input
+                        id="facebook"
                         name="facebook"
                         value={input.facebook}
                         onChange={changeEventHandler}
                         placeholder="Enter a URL"
+                        className="col-span-3 text-gray-500"
                       />
                     </div>
                     <div>
                       <Label>Instagram</Label>
                       <Input
+                        id="instagram"
                         name="instagram"
                         value={input.instagram}
                         onChange={changeEventHandler}
                         placeholder="Enter a URL"
+                        className="col-span-3 text-gray-500"
                       />
                     </div>
                   </div>
-
                   <div className="flex gap-2">
                     <div>
                       <Label>Linkedin</Label>
                       <Input
+                        id="linkedin"
                         name="linkedin"
                         value={input.linkedin}
                         onChange={changeEventHandler}
                         placeholder="Enter a URL"
+                        className="col-span-3 text-gray-500"
                       />
                     </div>
                     <div>
                       <Label>Github</Label>
                       <Input
+                        id="github"
                         name="github"
                         value={input.github}
                         onChange={changeEventHandler}
                         placeholder="Enter a URL"
+                        className="col-span-3 text-gray-500"
                       />
                     </div>
                   </div>
-
                   <div>
                     <Label>Description</Label>
                     <Textarea
-                      name="bio"
+                      id="bio"
                       value={input.bio}
                       onChange={changeEventHandler}
+                      name="bio"
                       placeholder="Enter a description"
+                      className="col-span-3 text-gray-500"
                     />
                   </div>
-
                   <div>
                     <Label>Picture</Label>
                     <Input
+                      id="file"
                       type="file"
                       accept="image/*"
                       onChange={changeFileHandler}
+                      className="w-[277px]"
                     />
                   </div>
                 </div>
-
                 <DialogFooter>
                   {loading ? (
-                    <Button>
+                    <Button disabled>
                       <Loader2 className="mr-2 w-4 h-4 animate-spin" /> Please
                       wait
                     </Button>
