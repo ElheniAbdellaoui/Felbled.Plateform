@@ -18,8 +18,8 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "Cet email est déjà utilisé." });
     }
 
-    // Création user (password sera hashé dans pre("save"))
-    const user = await User.create({
+    // Création user
+    const user = new User({
       firstName,
       lastName,
       email,
@@ -27,16 +27,29 @@ export const register = async (req, res) => {
       role: role || "user",
     });
 
-    // Génération JWT
-    const token = user.getJWT();
+    // Générer un token de vérification
+    const verifyToken = crypto.randomBytes(32).toString("hex");
+    user.verifyToken = crypto
+      .createHash("sha256")
+      .update(verifyToken)
+      .digest("hex");
+    user.verifyTokenExpire = Date.now() + 24 * 60 * 60 * 1000; // expire dans 24h
 
-    // Tentative d'envoi mail (facultatif)
+    await user.save();
+
+    // URL de vérification envoyée par email
+    const verifyUrl = `${process.env.FRONTEND_URL}/verify-email/${verifyToken}`;
+
     try {
       await sendEmail({
         to: user.email,
-        subject: "Bienvenue sur Felbled Platform 🎉",
-        html: `<h2>Bonjour ${user.firstName},</h2>
-               <p>Merci de vous être inscrit sur <b>Felbled Platform</b>.</p>`,
+        subject: "Vérification de votre compte",
+        html: `
+          <h2>Bonjour ${user.firstName},</h2>
+          <p>Merci de vous être inscrit sur <b>Felbled Platform</b>.</p>
+          <p>Cliquez ici pour vérifier votre compte :</p>
+          <a href="${verifyUrl}">${verifyUrl}</a>
+        `,
       });
     } catch (mailErr) {
       console.warn("⚠️ Envoi email échoué:", mailErr.message);
@@ -44,14 +57,8 @@ export const register = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      token,
-      user: {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        role: user.role,
-      },
+      message:
+        "Utilisateur créé. Vérifiez votre email pour activer votre compte.",
     });
   } catch (error) {
     console.error("Erreur register:", error);
@@ -206,34 +213,31 @@ export const getAllUsers = async (req, res) => {
 // ===================== VERIFY EMAIL =====================
 export const verifyEmail = async (req, res) => {
   try {
-    console.log("🔍 Token reçu brut:", req.params.token);
+    console.log("=== DEBUG VERIFY EMAIL ===");
+    console.log("Token reçu:", req.params.token);
 
     const token = crypto
       .createHash("sha256")
       .update(req.params.token)
       .digest("hex");
 
-    console.log("🔍 Token hashé:", token);
+    console.log("Token hashé:", token);
 
-    // Vérifiez tous les utilisateurs avec un verifyToken
-    const allUsersWithToken = await User.find(
-      {
-        verifyToken: { $exists: true },
-      },
-      "email verifyToken verifyTokenExpire"
+    // Vérifiez TOUS les utilisateurs avec verifyToken
+    const allUsers = await User.find(
+      {},
+      "email verifyToken verifyTokenExpire isVerified"
     );
+    console.log("Tous les utilisateurs:", allUsers);
 
-    console.log(
-      "👥 Utilisateurs avec token de vérification:",
-      allUsersWithToken
-    );
-
+    // Vérifiez spécifiquement
     const user = await User.findOne({
       verifyToken: token,
       verifyTokenExpire: { $gt: Date.now() },
     });
 
-    console.log("👤 Utilisateur trouvé:", user ? "✅ OUI" : "❌ NON");
+    console.log("Utilisateur trouvé:", user);
+    console.log("Date actuelle:", Date.now());
 
     if (!user) {
       return res.status(400).json({ message: "Token invalide ou expiré" });
