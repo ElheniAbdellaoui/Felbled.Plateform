@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 
 const Comments = () => {
   const [allComments, setAllComments] = useState([]);
-  const [errorMessage, setErrorMessage] = useState(""); // pour gérer 403 ou autres erreurs
+  const [errorMessage, setErrorMessage] = useState(""); // Pour afficher les erreurs
   const navigate = useNavigate();
 
   const getTotalComments = async () => {
@@ -29,19 +29,27 @@ const Comments = () => {
       );
 
       if (res.data.success) {
-        setAllComments(res.data.comments);
+        setAllComments(res.data.comments || []);
         setErrorMessage("");
       }
     } catch (error) {
       console.error(error);
-      if (error.response && error.response.status === 403) {
-        setErrorMessage(
-          "Vous n’êtes pas autorisé à voir les commentaires de ces blogs."
-        );
+      if (error.response) {
+        if (error.response.status === 403) {
+          setErrorMessage(
+            "Vous n’êtes pas autorisé à voir les commentaires de ces blogs."
+          );
+        } else if (error.response.status === 401) {
+          setErrorMessage(
+            "Vous devez vous connecter pour voir les commentaires."
+          );
+        } else {
+          setErrorMessage(
+            "Une erreur est survenue lors du chargement des commentaires."
+          );
+        }
       } else {
-        setErrorMessage(
-          "Une erreur est survenue lors du chargement des commentaires."
-        );
+        setErrorMessage("Impossible de contacter le serveur.");
       }
     }
   };
@@ -65,10 +73,10 @@ const Comments = () => {
               <TableCaption>A list of your recent comments.</TableCaption>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Blog Title</TableHead>
-                  <TableHead>Comment</TableHead>
-                  <TableHead>Author</TableHead>
-                  <TableHead className="text-center">Action</TableHead>
+                  <TableCell>Blog Title</TableCell>
+                  <TableCell>Comment</TableCell>
+                  <TableCell>Author</TableCell>
+                  <TableCell className="text-center">Action</TableCell>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -78,10 +86,15 @@ const Comments = () => {
                       {comment?.postId?.title || "Titre inconnu"}
                     </TableCell>
                     <TableCell>{comment?.content || "Aucun contenu"}</TableCell>
-                    <TableCell>
+                    <TableCell className="flex items-center gap-2">
+                      <img
+                        src={comment?.userId?.photoUrl || "/user.jpg"}
+                        alt="avatar"
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
                       {comment?.userId?.firstName || "Anonyme"}
                     </TableCell>
-                    <TableCell className="text-right flex gap-3 items-center justify-center">
+                    <TableCell className="text-center">
                       {comment?.postId?._id && (
                         <Eye
                           className="cursor-pointer"
