@@ -14,17 +14,26 @@ import { useNavigate } from "react-router-dom";
 
 const Comments = () => {
   const [allComments, setAllComments] = useState([]);
-  const [errorMessage, setErrorMessage] = useState(""); // Pour afficher les erreurs
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
   const getTotalComments = async () => {
     try {
+      const token = localStorage.getItem("token"); // récupère le JWT
+      if (!token) {
+        setErrorMessage(
+          "Vous devez vous connecter pour voir les commentaires."
+        );
+        return;
+      }
+
       const res = await axios.get(
         "https://felblad-plateform.onrender.com/api/v1/comment/my-blogs/comments",
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
+          withCredentials: true, // si tu utilises des cookies
         }
       );
 
