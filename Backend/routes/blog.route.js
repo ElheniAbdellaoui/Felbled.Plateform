@@ -1,4 +1,7 @@
 import express from "express";
+
+import { isAuthenticated } from "../middleware/isAuthenticated.js";
+import { singleUpload } from "../middleware/multer.js";
 import {
   createBlog,
   deleteBlog,
@@ -11,48 +14,18 @@ import {
   togglePublishBlog,
   updateBlog,
 } from "../controllers/blog.controller.js";
-import { isAuthenticated } from "../middleware/isAuthenticated.js";
-import { authorizeRoles } from "../middleware/authorizeRoles.js";
-import singleUpload from "../middleware/multer.js";
 
 const router = express.Router();
 
-// Professeur → créer ou mettre à jour un blog pédagogique
-router.post("/", isAuthenticated, authorizeRoles("professeur"), createBlog);
-router.put(
-  "/:blogId",
-  isAuthenticated,
-  authorizeRoles("professeur"),
-  singleUpload,
-  updateBlog
-);
-router.route("/:blogId", authorizeRoles("professeur")).patch(togglePublishBlog);
-
-// Admin → supprimer un blog
-router.delete(
-  "/delete/:id",
-  isAuthenticated,
-  authorizeRoles("admin"),
-  deleteBlog
-);
-//Admin-> get own blog
-router.get("/get-own-blogs", isAuthenticated, getOwnBlogs);
-// User → liker, commenter
-router.get(
-  "/:id/like",
-  isAuthenticated,
-  authorizeRoles("user", "professeur", "admin"),
-  likeBlog
-);
-router.get(
-  "/:id/dislike",
-  isAuthenticated,
-  authorizeRoles("user", "professeur", "admin"),
-  dislikeBlog
-);
-
-router.get("/get-all-blogs", getAllBlogs);
-router.get("/get-published-blogs", getPublishedBlog);
+router.route("/").post(isAuthenticated, createBlog);
+router.route("/:blogId").put(isAuthenticated, singleUpload, updateBlog);
+router.route("/get-own-blogs").get(isAuthenticated, getOwnBlogs);
+router.route("/delete/:id").delete(isAuthenticated, deleteBlog);
+router.get("/:id/like", isAuthenticated, likeBlog);
+router.get("/:id/dislike", isAuthenticated, dislikeBlog);
 router.get("/my-blogs/likes", isAuthenticated, getMyTotalBlogLikes);
+router.route("/:blogId").patch(togglePublishBlog);
+router.route("/get-all-blogs").get(getAllBlogs);
+router.route("/get-published-blogs").get(getPublishedBlog);
 
 export default router;

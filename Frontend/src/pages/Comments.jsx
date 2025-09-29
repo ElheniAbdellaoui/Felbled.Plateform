@@ -4,120 +4,77 @@ import {
   TableBody,
   TableCaption,
   TableCell,
+  TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import axios from "axios";
-import { Eye } from "lucide-react";
+import { Edit, Eye, Trash2 } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Comments = () => {
   const [allComments, setAllComments] = useState([]);
-  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
-
   const getTotalComments = async () => {
     try {
-      const token = localStorage.getItem("token"); // récupère le JWT
-      if (!token) {
-        setErrorMessage(
-          "Vous devez vous connecter pour voir les commentaires."
-        );
-        return;
-      }
-
       const res = await axios.get(
-        "https://felblad-plateform.onrender.com/api/v1/comment/my-blogs/comments",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true, // si tu utilises des cookies
-        }
+        `https://felblad-plateform.onrender.com/api/v1/comment/my-blogs/comments`,
+        { withCredentials: true }
       );
-
       if (res.data.success) {
-        setAllComments(res.data.comments || []);
-        setErrorMessage("");
+        setAllComments(res.data.comments);
       }
     } catch (error) {
-      console.error(error);
-      if (error.response) {
-        if (error.response.status === 403) {
-          setErrorMessage(
-            "Vous n’êtes pas autorisé à voir les commentaires de ces blogs."
-          );
-        } else if (error.response.status === 401) {
-          setErrorMessage(
-            "Vous devez vous connecter pour voir les commentaires."
-          );
-        } else {
-          setErrorMessage(
-            "Une erreur est survenue lors du chargement des commentaires."
-          );
-        }
-      } else {
-        setErrorMessage("Impossible de contacter le serveur.");
-      }
+      console.log(error);
     }
   };
-
   useEffect(() => {
     getTotalComments();
   }, []);
+  console.log(allComments);
 
   return (
     <div className="pb-10 pt-20 md:ml-[320px] h-screen">
-      <div className="max-w-6xl mx-auto mt-8">
+      <div className="max-w-6xl mx-auto mt-8 ">
         <Card className="w-full p-5 space-y-2 dark:bg-gray-800">
-          {errorMessage ? (
-            <p className="text-center text-red-500">{errorMessage}</p>
-          ) : allComments.length === 0 ? (
-            <p className="text-center text-gray-500">
-              Aucun commentaire trouvé.
-            </p>
-          ) : (
-            <Table>
-              <TableCaption>A list of your recent comments.</TableCaption>
-              <TableHeader>
-                <TableRow>
-                  <TableCell>Blog Title</TableCell>
-                  <TableCell>Comment</TableCell>
-                  <TableCell>Author</TableCell>
-                  <TableCell className="text-center">Action</TableCell>
+          <Table>
+            <TableCaption>A list of your recent comments.</TableCaption>
+            <TableHeader>
+              <TableRow>
+                {/* <TableHead className="w-[100px]">Author</TableHead> */}
+                <TableHead>Blog Title</TableHead>
+                <TableHead>Comment</TableHead>
+                <TableHead>Author</TableHead>
+                <TableHead className="text-center">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {allComments?.map((comment, index) => (
+                <TableRow key={index}>
+                  {/* <TableCell className="font-medium">{item.author.firstName}</TableCell> */}
+                  <TableCell className="flex gap-4 items-center">
+                    {/* <img src={item.thumbnail} alt="" className='w-20 rounded-md hidden md:block' /> */}
+                    {comment.postId.title}
+                  </TableCell>
+                  <TableCell>{comment.content}</TableCell>
+                  <TableCell className="">{comment.userId.firstName}</TableCell>
+                  <TableCell className="text-right flex gap-3 items-center justify-center">
+                    <Eye
+                      className="cursor-pointer"
+                      onClick={() => navigate(`/blogs/${comment.postId._id}`)}
+                    />
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {allComments.map((comment, index) => (
-                  <TableRow key={index}>
-                    <TableCell>
-                      {comment?.postId?.title || "Titre inconnu"}
-                    </TableCell>
-                    <TableCell>{comment?.content || "Aucun contenu"}</TableCell>
-                    <TableCell className="flex items-center gap-2">
-                      <img
-                        src={comment?.userId?.photoUrl || "/user.jpg"}
-                        alt="avatar"
-                        className="w-8 h-8 rounded-full object-cover"
-                      />
-                      {comment?.userId?.firstName || "Anonyme"}
-                    </TableCell>
-                    <TableCell className="text-center">
-                      {comment?.postId?._id && (
-                        <Eye
-                          className="cursor-pointer"
-                          onClick={() =>
-                            navigate(`/blogs/${comment.postId._id}`)
-                          }
-                        />
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
+              ))}
+            </TableBody>
+            {/* <TableFooter>
+                    <TableRow>
+                        <TableCell colSpan={3}>Total</TableCell>
+                        <TableCell className="text-right">$2,500.00</TableCell>
+                    </TableRow>
+                </TableFooter> */}
+          </Table>
         </Card>
       </div>
     </div>

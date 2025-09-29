@@ -4,16 +4,11 @@ import { Outlet } from "react-router-dom";
 
 const Dashboard = () => {
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
-      <aside className="w-64 bg-gray-800 text-white hidden md:block">
-        <Sidebar />
-      </aside>
-
-      {/* Main content */}
-      <main className="flex-1 p-6 bg-gray-100">
+    <div className="flex">
+      <Sidebar />
+      <div className="flex-1">
         <Outlet />
-      </main>
+      </div>
     </div>
   );
 };

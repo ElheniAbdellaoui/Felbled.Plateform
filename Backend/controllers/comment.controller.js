@@ -59,19 +59,16 @@ export const getCommentsOfPost = async (req, res) => {
 export const deleteComment = async (req, res) => {
   try {
     const commentId = req.params.id;
-    const requestorId = req.id;
-    const requestorRole = req.role;
-
+    const authorId = req.id;
     const comment = await Comment.findById(commentId);
-    if (!comment)
+    console.log(commentId);
+
+    if (!comment) {
       return res
         .status(404)
         .json({ success: false, message: "Comment not found" });
-
-    if (
-      comment.userId.toString() !== requestorId &&
-      requestorRole !== "admin"
-    ) {
+    }
+    if (comment.userId.toString() !== authorId) {
       return res.status(403).json({
         success: false,
         message: "Unauthorized to delete this comment",
@@ -79,8 +76,14 @@ export const deleteComment = async (req, res) => {
     }
 
     const blogId = comment.postId;
+
+    // Delete the comment
     await Comment.findByIdAndDelete(commentId);
-    await Blog.findByIdAndUpdate(blogId, { $pull: { comments: commentId } });
+
+    // Remove comment ID from blog's comments array
+    await Blog.findByIdAndUpdate(blogId, {
+      $pull: { comments: commentId },
+    });
 
     res
       .status(200)
@@ -93,6 +96,7 @@ export const deleteComment = async (req, res) => {
     });
   }
 };
+
 export const editComment = async (req, res) => {
   try {
     const userId = req.id;

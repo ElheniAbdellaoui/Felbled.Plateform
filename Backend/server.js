@@ -2,7 +2,6 @@ import dotenv from "dotenv";
 import connectDB from "./database/db.js";
 import useRoute from "./routes/user.route.js";
 import blogRoute from "./routes/blog.route.js";
-import adminRoutes from "./routes/admin.route.js";
 import commentRoute from "./routes/comment.route.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -11,38 +10,22 @@ import path from "path";
 dotenv.config();
 import cloudinary from "./utils/cloudinary.js"; // Now safe to import
 import express from "express";
-import helmet from "helmet";
-import compression from "compression";
 console.log("🔍 MONGO_URI chargée :", process.env.MONGO_URI);
 const app = express();
 
 // Middlewares
-app.use(
-  helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "https:", "blob:"],
-        scriptSrc: ["'self'", "https://cdnjs.cloudflare.com"],
-        mediaSrc: ["'self'", "data:"],
-      },
-    },
-  })
-);
-app.use(compression());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: ["https://felblad-plateform.onrender.com", "http://localhost:5173"],
+    origin: ["http://localhost:5173", "https://felblad-plateform.onrender.com"],
     credentials: true,
   })
 );
 
 const _dirname = path.resolve();
 // Routes
-app.use("/api/v1/admin", adminRoutes);
 app.use("/api/v1/user", useRoute);
 app.use("/api/v1/blog", blogRoute);
 app.use("/api/v1/comment", commentRoute);

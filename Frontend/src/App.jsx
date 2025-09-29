@@ -18,8 +18,6 @@ import SearchList from "./pages/SearchList";
 import AdminDashboard from "./pages/AdminDashboard";
 import Courses from "./pages/Courses";
 import CourseView from "./pages/CourseView";
-import ResetPassword from "./pages/ResetPassword";
-import VerifyEmail from "./pages/VerifyEmail";
 
 // Components
 import Navbar from "./components/Navbar";
@@ -85,32 +83,13 @@ const router = createBrowserRouter([
       </>
     ),
   },
+
   {
     path: "/blogs/:blogId",
     element: (
       <>
         <Navbar />
         <BlogView />
-      </>
-    ),
-  },
-
-  // Reset + Verify
-  {
-    path: "/reset-password/:token",
-    element: (
-      <>
-        <Navbar />
-        <ResetPassword />
-      </>
-    ),
-  },
-  {
-    path: "/verify-email/:token",
-    element: (
-      <>
-        <Navbar />
-        <VerifyEmail />
       </>
     ),
   },

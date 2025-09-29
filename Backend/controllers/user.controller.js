@@ -1,149 +1,134 @@
-import User from "../models/user.model.js";
+import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
 
-import getDataUri from "../utils/dataUri.js";
-import cloudinary from "cloudinary";
-import { sendEmail } from "../utils/sendEmail.js";
+import getDataUri from "../utils/dataUri.js"; // ✅ importer la fonction
 
-// ===================== REGISTER =====================
+import cloudinary from "cloudinary"; // Assurez-vous que cloudinary est bien configuré
+
 export const register = async (req, res) => {
+  console.log("📦 Body reçu :", req.body);
   try {
-    const { firstName, lastName, email, password, role } = req.body;
-
-    // Vérif si email existe déjà
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "Cet email est déjà utilisé." });
+    const { firstName, lastName, email, password } = req.body;
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
     }
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
-    // Création user
-    const user = new User({
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email",
+      });
+    }
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters",
+      });
+    }
+    const existingUserByEmail = await User.findOne({ email: email });
+    if (existingUserByEmail) {
+      return res.status(400).json({
+        success: false,
+        message: "Email already exists",
+      });
+    }
+    const hashPassword = await bcrypt.hash(password, 10);
+    await User.create({
       firstName,
       lastName,
       email,
-      password,
-      role: role || "user",
+      password: hashPassword,
     });
-
-    // Générer un token de vérification
-    const verifyToken = crypto.randomBytes(32).toString("hex");
-    user.verifyToken = crypto
-      .createHash("sha256")
-      .update(verifyToken)
-      .digest("hex");
-    user.verifyTokenExpire = Date.now() + 24 * 60 * 60 * 1000; // expire dans 24h
-
-    await user.save();
-
-    // URL de vérification envoyée par email
-    const verifyUrl = `${process.env.FRONTEND_URL}/verify-email/${verifyToken}`;
-
-    try {
-      await sendEmail({
-        to: user.email,
-        subject: "Vérification de votre compte",
-        html: `
-          <h2>Bonjour ${user.firstName},</h2>
-          <p>Merci de vous être inscrit sur <b>Felbled Platform</b>.</p>
-          <p>Cliquez ici pour vérifier votre compte :</p>
-          <a href="${verifyUrl}">${verifyUrl}</a>
-        `,
-      });
-    } catch (mailErr) {
-      console.warn("⚠️ Envoi email échoué:", mailErr.message);
-    }
-
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
-      message:
-        "Utilisateur créé. Vérifiez votre email pour activer votre compte.",
+      message: "Account Created Successfully",
     });
   } catch (error) {
-    console.error("Erreur register:", error);
-    res.status(500).json({ message: "Erreur serveur lors de l'inscription." });
+    console.error("❌ REGISTER ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to register",
+    });
   }
 };
 
-// ===================== LOGIN =====================
-
 export const login = async (req, res) => {
+  console.log("🔐 Login function called", req.body);
   try {
     const { email, password } = req.body;
 
-    // Vérifier si l'utilisateur existe
-    const user = await User.findOne({ email }).select("+password");
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    let user = await User.findOne({ email });
+
     if (!user) {
-      return res
-        .status(400)
-        .json({ message: "Email ou mot de passe invalide." });
+      return res.status(400).json({
+        success: false,
+        message: "Incorrect email or password",
+      });
     }
 
-    // Vérifier le mot de passe
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res
-        .status(400)
-        .json({ message: "Email ou mot de passe invalide." });
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid Credentials",
+      });
     }
+    console.log("SECRET_KEY:", process.env.SECRET_KEY);
 
-    // Générer le token
-    const token = jwt.sign(
-      { id: user._id }, // ⚡ clé `id` correspond au middleware
-      process.env.SECRET_KEY,
-      { expiresIn: "7d" }
-    );
-
-    // ⚡ Optionnel : envoyer aussi dans un cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 jours
+    const token = await jwt.sign({ userId: user._id }, process.env.SECRET_KEY, {
+      expiresIn: "1d",
     });
 
-    res.status(200).json({
-      success: true,
-      token, // Pour Postman et frontend
-      user: {
-        id: user._id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        role: user.role,
-        photoUrl: user.photoUrl,
-      },
-    });
+    return res
+      .status(200)
+      .cookie("token", token, {
+        maxAge: 24 * 60 * 60 * 1000, // 1 jour
+        httpOnly: true, // CORRECT
+        sameSite: "strict",
+        secure: false, // mettre true si HTTPS
+      })
+      .json({
+        success: true,
+        message: `Welcome back ${user.firstName}`,
+        user,
+      });
   } catch (error) {
-    console.error("Erreur login:", error.message);
-    res.status(500).json({ message: "Erreur serveur lors de la connexion." });
+    console.error("LOGIN ERROR:", error); // pour afficher le vrai message d’erreur
+    return res.status(500).json({
+      success: false,
+      message: "Failed to login",
+    });
   }
 };
-// ===================== LOGOUT =====================
+
 export const logout = async (_, res) => {
   try {
     return res.status(200).cookie("token", "", { maxAge: 0 }).json({
-      message: "Déconnexion réussie",
+      message: "logout successfully",
       success: true,
     });
   } catch (error) {
-    console.log("Erreur logout:", error);
-    res.status(500).json({ message: "Erreur serveur lors de la déconnexion." });
+    console.log(error);
   }
 };
 
-// ===================== UPDATE PROFILE =====================
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.id;
-    const user = await User.findById(userId).select("-password");
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Utilisateur non trouvé" });
-    }
-
     const {
       firstName,
       lastName,
@@ -154,50 +139,85 @@ export const updateProfile = async (req, res) => {
       linkedin,
       github,
     } = req.body;
+    const file = req.file;
 
-    // si fichier uploadé
-    if (req.file) {
-      const fileUri = getDataUri(req.file);
-      const uploadRes = await cloudinary.v2.uploader.upload(fileUri, {
-        folder: "user-profiles",
-        resource_type: "auto",
+    // Vérification cruciale avant le traitement du fichier
+    if (file && !file.buffer) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid file format or missing file data",
       });
-      user.photoUrl = uploadRes.secure_url;
     }
 
-    // Mettre à jour les champs
+    let cloudResponse = null;
+    if (file) {
+      const fileUri = getDataUri(file);
+
+      // Vérification supplémentaire pour les données de fichier
+      if (!fileUri || !fileUri.startsWith("data:")) {
+        return res.status(400).json({
+          success: false,
+          message: "Failed to process file data",
+        });
+      }
+
+      // Upload vers Cloudinary avec gestion des erreurs
+      try {
+        cloudResponse = await cloudinary.uploader.upload(fileUri, {
+          resource_type: "auto",
+          folder: "user-profiles", // Ajoutez un dossier pour mieux organiser
+        });
+      } catch (uploadError) {
+        console.error("Cloudinary upload error:", uploadError);
+        return res.status(500).json({
+          success: false,
+          message: "File upload failed",
+          error: uploadError.message,
+        });
+      }
+    }
+
+    const user = await User.findById(userId).select("-password");
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        success: false,
+      });
+    }
+
+    // Mise à jour des données
     if (firstName) user.firstName = firstName;
     if (lastName) user.lastName = lastName;
     if (occupation) user.occupation = occupation;
-    if (bio) user.bio = bio;
     if (instagram) user.instagram = instagram;
     if (facebook) user.facebook = facebook;
     if (linkedin) user.linkedin = linkedin;
     if (github) user.github = github;
+    if (bio) user.bio = bio;
+    if (cloudResponse) user.photoUrl = cloudResponse.secure_url;
 
     await user.save();
     return res.status(200).json({
+      message: "Profile updated successfully",
       success: true,
-      message: "Profil mis à jour",
       user,
     });
   } catch (error) {
-    console.error("Error updateProfile:", error);
+    console.error("Update profile error:", error);
     return res.status(500).json({
       success: false,
-      message: "Erreur serveur mise à jour profil",
-      error: error.message,
+      message: "Failed to update profile",
+      error: error.message, // Ajout du message d'erreur pour le débogage
     });
   }
 };
 
-// ===================== GET ALL USERS =====================
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password"); // exclure mot de passe
+    const users = await User.find().select("-password"); // exclude password field
     res.status(200).json({
       success: true,
-      message: "Liste des utilisateurs récupérée",
+      message: "User list fetched successfully",
       total: users.length,
       users,
     });
@@ -205,112 +225,7 @@ export const getAllUsers = async (req, res) => {
     console.error("Error fetching user list:", error);
     res.status(500).json({
       success: false,
-      message: "Échec récupération utilisateurs",
+      message: "Failed to fetch users",
     });
-  }
-};
-
-// ===================== VERIFY EMAIL =====================
-export const verifyEmail = async (req, res) => {
-  try {
-    console.log("=== DEBUG VERIFY EMAIL ===");
-    console.log("Token reçu:", req.params.token);
-
-    const token = crypto
-      .createHash("sha256")
-      .update(req.params.token)
-      .digest("hex");
-
-    console.log("Token hashé:", token);
-
-    // Vérifiez TOUS les utilisateurs avec verifyToken
-    const allUsers = await User.find(
-      {},
-      "email verifyToken verifyTokenExpire isVerified"
-    );
-    console.log("Tous les utilisateurs:", allUsers);
-
-    // Vérifiez spécifiquement
-    const user = await User.findOne({
-      verifyToken: token,
-      verifyTokenExpire: { $gt: Date.now() },
-    });
-
-    console.log("Utilisateur trouvé:", user);
-    console.log("Date actuelle:", Date.now());
-
-    if (!user) {
-      return res.status(400).json({ message: "Token invalide ou expiré" });
-    }
-
-    user.isVerified = true;
-    user.verifyToken = undefined;
-    user.verifyTokenExpire = undefined;
-    await user.save();
-
-    res.json({ success: true, message: "Email vérifié" });
-  } catch (error) {
-    console.error("Erreur verifyEmail:", error);
-    res.status(500).json({ message: "Erreur serveur vérification email" });
-  }
-};
-
-// ===================== FORGOT PASSWORD =====================
-export const forgotPassword = async (req, res) => {
-  try {
-    const user = await User.findOne({ email: req.body.email });
-    if (!user)
-      return res.status(404).json({ message: "Utilisateur introuvable" });
-
-    const resetToken = user.getResetToken();
-    await user.save();
-
-    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
-    try {
-      await sendEmail({
-        to: user.email,
-        subject: "Réinitialisation du mot de passe",
-        html: `<a href="${resetUrl}">Cliquez ici pour réinitialiser votre mot de passe</a>`,
-      });
-    } catch (mailErr) {
-      console.warn("⚠️ Email reset non envoyé:", mailErr.message);
-    }
-
-    res.json({ success: true, message: "Lien de réinitialisation envoyé" });
-  } catch (error) {
-    console.error("Erreur forgotPassword:", error);
-    res.status(500).json({ message: "Erreur serveur forgot password" });
-  }
-};
-
-// ===================== RESET PASSWORD =====================
-export const resetPassword = async (req, res) => {
-  try {
-    const token = crypto
-      .createHash("sha256")
-      .update(req.params.token)
-      .digest("hex");
-
-    const user = await User.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpire: { $gt: Date.now() },
-    });
-
-    if (!user) {
-      return res.status(400).json({ message: "Token invalide ou expiré" });
-    }
-
-    user.password = req.body.password;
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpire = undefined;
-    await user.save();
-
-    res.json({
-      success: true,
-      message: "Mot de passe réinitialisé avec succès",
-    });
-  } catch (error) {
-    console.error("Erreur resetPassword:", error);
-    res.status(500).json({ message: "Erreur serveur reset password" });
   }
 };

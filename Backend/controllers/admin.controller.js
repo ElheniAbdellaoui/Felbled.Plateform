@@ -1,3 +1,6 @@
+import { Blog } from "../models/blog.model";
+import User from "../models/user.model";
+
 // In your admin controller
 export const getStats = async (req, res) => {
   try {
