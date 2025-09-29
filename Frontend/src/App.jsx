@@ -115,7 +115,6 @@ const router = createBrowserRouter([
     ),
   },
 
-  // Dashboard
   {
     path: "/dashboard",
     element: (
@@ -131,21 +130,11 @@ const router = createBrowserRouter([
       { path: "profile", element: <Profile /> },
       { path: "write-blog/:blogId", element: <UpdateBlog /> },
 
-      // Admin uniquement
-      {
-        path: "admin",
-        element: (
-          <ProtectedRoute roles={["admin"]}>
-            <AdminDashboard />
-          </ProtectedRoute>
-        ),
-      },
-
-      // Courses (Professeur + User)
+      // Cours → seulement professeur ou admin
       {
         path: "courses",
         element: (
-          <ProtectedRoute roles={["professeur", "user", "admin"]}>
+          <ProtectedRoute roles={["professeur", "admin"]}>
             <Courses />
           </ProtectedRoute>
         ),
@@ -153,8 +142,18 @@ const router = createBrowserRouter([
       {
         path: "courses/:courseId",
         element: (
-          <ProtectedRoute roles={["professeur", "user", "admin"]}>
+          <ProtectedRoute roles={["professeur", "admin"]}>
             <CourseView />
+          </ProtectedRoute>
+        ),
+      },
+
+      // Admin → seulement admin
+      {
+        path: "admin",
+        element: (
+          <ProtectedRoute roles={["admin"]}>
+            <AdminDashboard />
           </ProtectedRoute>
         ),
       },

@@ -1,12 +1,14 @@
-import { ChartColumnBig, SquareUser } from "lucide-react";
+import { ChartColumnBig, SquareUser, ShieldCheck } from "lucide-react";
 import React from "react";
 import { FaRegEdit } from "react-icons/fa";
 import { LiaCommentSolid } from "react-icons/lia";
-import { PiChalkboardTeacher } from "react-icons/pi"; // pour courses
-import { ShieldCheck } from "lucide-react"; // pour admin
+import { PiChalkboardTeacher } from "react-icons/pi";
 import { NavLink } from "react-router-dom";
+import { useSelector } from "react-redux"; // récupère le user depuis Redux
 
 const Sidebar = () => {
+  const { user } = useSelector((state) => state.auth); // user stocké après login
+
   const linkStyle = ({ isActive }) =>
     `text-lg flex items-center gap-2 font-semibold cursor-pointer p-3 rounded-xl transition-colors ${
       isActive
@@ -17,6 +19,7 @@ const Sidebar = () => {
   return (
     <div className="h-screen w-64 border-r-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-6">
       <div className="flex flex-col space-y-3">
+        {/* Toujours visible */}
         <NavLink to="/dashboard/profile" className={linkStyle}>
           <SquareUser />
           <span>Profile</span>
@@ -37,17 +40,21 @@ const Sidebar = () => {
           <span>Create Blog</span>
         </NavLink>
 
-        {/* NEW: Courses */}
-        <NavLink to="/dashboard/courses" className={linkStyle}>
-          <PiChalkboardTeacher />
-          <span>Courses</span>
-        </NavLink>
+        {/* Visible seulement pour professeur OU admin */}
+        {(user?.role === "professeur" || user?.role === "admin") && (
+          <NavLink to="/dashboard/courses" className={linkStyle}>
+            <PiChalkboardTeacher />
+            <span>Courses</span>
+          </NavLink>
+        )}
 
-        {/* NEW: Admin (visible seulement si user = admin → tu peux mettre une condition plus tard) */}
-        <NavLink to="/dashboard/admin" className={linkStyle}>
-          <ShieldCheck />
-          <span>Admin</span>
-        </NavLink>
+        {/* Visible seulement pour admin */}
+        {user?.role === "admin" && (
+          <NavLink to="/dashboard/admin" className={linkStyle}>
+            <ShieldCheck />
+            <span>Admin</span>
+          </NavLink>
+        )}
       </div>
     </div>
   );
