@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   Breadcrumb,
-  // BreadcrumbEllipsis,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
@@ -27,13 +26,31 @@ const BlogView = () => {
   const { blog } = useSelector((store) => store.blog);
   const { user } = useSelector((store) => store.auth);
   const selectedBlog = blog.find((blog) => blog._id === blogId);
-  const [blogLike, setBlogLike] = useState(selectedBlog?.likes.length);
+  const [blogLike, setBlogLike] = useState(selectedBlog?.likes?.length || 0);
   const { comment } = useSelector((store) => store.comment);
   const [liked, setLiked] = useState(
-    selectedBlog?.likes.includes(user?._id) || false
+    selectedBlog?.likes?.includes(user?._id) || false
   );
   const dispatch = useDispatch();
-  console.log(selectedBlog);
+
+  // ✅ AJOUT: Vérification si le blog existe
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  // ✅ AJOUT: Afficher un loader si le blog n'est pas trouvé
+  if (!selectedBlog) {
+    return (
+      <div className="pt-14 flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold mb-4">Loading...</h2>
+          <p className="text-muted-foreground">
+            Please wait while we load the blog post.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const likeOrDislikeHandler = async () => {
     try {
@@ -47,7 +64,6 @@ const BlogView = () => {
         setBlogLike(updatedLikes);
         setLiked(!liked);
 
-        //apne blog ko update krunga
         const updatedBlogData = blog.map((p) =>
           p._id === selectedBlog._id
             ? {
@@ -63,7 +79,7 @@ const BlogView = () => {
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.response.data.message);
+      toast.error(error?.response?.data?.message || "An error occurred");
     }
   };
 
@@ -74,14 +90,6 @@ const BlogView = () => {
     return formattedDate;
   };
 
-  // const handleShare = (blogId) => {
-  //     const blogUrl = `${window.location.origin}/blogs/${blogId}`;
-  //     navigator.clipboard.writeText(blogUrl).then(() => {
-  //         toast.success('Blog link copied to clipboard!');
-  //     }).catch((err) => {
-  //         console.error('Failed to copy:', err);
-  //     });
-  // };
   const handleShare = (blogId) => {
     const blogUrl = `${window.location.origin}/blogs/${blogId}`;
 
@@ -95,16 +103,12 @@ const BlogView = () => {
         .then(() => console.log("Shared successfully"))
         .catch((err) => console.error("Error sharing:", err));
     } else {
-      // fallback: copy to clipboard
       navigator.clipboard.writeText(blogUrl).then(() => {
         toast.success("Blog link copied to clipboard!");
       });
     }
   };
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
   return (
     <div className="pt-14">
       <div className="max-w-6xl mx-auto p-10">
@@ -116,7 +120,6 @@ const BlogView = () => {
               </Link>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
-
             <BreadcrumbItem>
               <Link to={"/blogs"}>
                 <BreadcrumbLink>Blogs</BreadcrumbLink>
@@ -124,32 +127,39 @@ const BlogView = () => {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>{selectedBlog.title}</BreadcrumbPage>
+              <BreadcrumbPage>{selectedBlog?.title || "Blog"}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
+
         {/* Blog Header */}
         <div className="my-8">
           <h1 className="text-4xl font-bold tracking-tight mb-4">
-            {selectedBlog.title}
+            {selectedBlog?.title}
           </h1>
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center space-x-4">
               <Avatar>
-                <AvatarImage src={selectedBlog.author.photoUrl} alt="Author" />
-                <AvatarFallback>JD</AvatarFallback>
+                <AvatarImage
+                  src={selectedBlog?.author?.photoUrl}
+                  alt="Author"
+                />
+                <AvatarFallback>
+                  {selectedBlog?.author?.firstName?.[0] || "U"}
+                </AvatarFallback>
               </Avatar>
               <div>
                 <p className="font-medium">
-                  {selectedBlog.author.firstName} {selectedBlog.author.lastName}
+                  {selectedBlog?.author?.firstName}{" "}
+                  {selectedBlog?.author?.lastName}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {selectedBlog.author.occupation}
+                  {selectedBlog?.author?.occupation || "Author"}
                 </p>
               </div>
             </div>
             <div className="text-sm text-muted-foreground">
-              Published on {changeTimeFormat(selectedBlog.createdAt)} • 8 min
+              Published on {changeTimeFormat(selectedBlog?.createdAt)} • 8 min
               read
             </div>
           </div>
@@ -158,20 +168,20 @@ const BlogView = () => {
         {/* Featured Image */}
         <div className="mb-8 rounded-lg overflow-hidden">
           <img
-            src={selectedBlog?.thumbnail}
-            alt="Next.js Development"
+            src={selectedBlog?.thumbnail || "/placeholder.jpg"}
+            alt={selectedBlog?.title || "Blog thumbnail"}
             width={1000}
             height={500}
             className="w-full object-cover"
           />
           <p className="text-sm text-muted-foreground mt-2 italic">
-            {selectedBlog.subtitle}
+            {selectedBlog?.subtitle}
           </p>
         </div>
 
         <p
           className=""
-          dangerouslySetInnerHTML={{ __html: selectedBlog.description }}
+          dangerouslySetInnerHTML={{ __html: selectedBlog?.description || "" }}
         />
 
         <div className="mt-10">
@@ -192,7 +202,6 @@ const BlogView = () => {
                 size="sm"
                 className="flex items-center gap-1"
               >
-                {/* <Heart className="h-4 w-4"/> */}
                 {liked ? (
                   <FaHeart
                     size={"24"}
@@ -204,7 +213,6 @@ const BlogView = () => {
                     className="cursor-pointer hover:text-gray-600 text-white"
                   />
                 )}
-
                 <span>{blogLike}</span>
               </Button>
               <Button
@@ -213,7 +221,7 @@ const BlogView = () => {
                 className="flex items-center gap-1"
               >
                 <MessageSquare className="h-4 w-4" />
-                <span>{comment.length} Comments</span>
+                <span>{comment?.length || 0} Comments</span>
               </Button>
             </div>
             <div className="flex items-center space-x-2">
@@ -221,7 +229,7 @@ const BlogView = () => {
                 <Bookmark className="h-4 w-4" />
               </Button>
               <Button
-                onClick={() => handleShare(selectedBlog._id)}
+                onClick={() => handleShare(selectedBlog?._id)}
                 variant="ghost"
                 size="sm"
               >
@@ -231,26 +239,6 @@ const BlogView = () => {
           </div>
         </div>
         <CommentBox selectedBlog={selectedBlog} />
-
-        {/* Author Bio */}
-        {/* <Card className="mb-12">
-                    <CardContent className="flex items-start space-x-4 pt-6">
-                        <Avatar className="h-12 w-12">
-                            <AvatarImage src="/placeholder.svg?height=48&width=48" alt="Author" />
-                            <AvatarFallback>JD</AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <h3 className="font-semibold mb-1">About Jane Doe</h3>
-                            <p className="text-sm text-muted-foreground mb-3">
-                                Jane is a lead developer with over 10 years of experience in web development. She specializes in React and
-                                Next.js and has helped numerous companies build modern, performant websites.
-                            </p>
-                            <Button variant="outline" size="sm">
-                                Follow
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card> */}
       </div>
     </div>
   );

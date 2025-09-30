@@ -34,7 +34,7 @@ const CreateBlog = () => {
       setLoading(true);
 
       const res = await axios.post(
-        `http://localhost:5173/api/v1/blog/`,
+        `https://felblad-plateform.onrender.com/api/v1/blog/`,
         { title, category },
         {
           headers: {
