@@ -1,61 +1,26 @@
-import React, { useEffect, useState } from "react";
-import { Button } from "./ui/button";
-import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Input } from "./ui/input";
-import Logo from "../assets/logo.png";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { useDispatch, useSelector } from "react-redux";
-import { toast } from "sonner";
-import axios from "axios";
-import { setUser } from "@/redux/authSlice";
-import userLogo from "../assets/user.jpg";
-import { HiMenuAlt1, HiMenuAlt3 } from "react-icons/hi";
-import { ChartColumnBig, LogOut, User, Users } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { FaEdit, FaMoon, FaRegEdit, FaSun } from "react-icons/fa";
-import { toggleTheme } from "@/redux/themeSlice";
-import { LiaCommentSolid } from "react-icons/lia";
-import ResponsiveMenu from "./ResponsiveMenu";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Search } from "lucide-react";
+import i18n from "../i18n";
 import { useTranslation } from "react-i18next";
 
 const Navbar = () => {
   const { t, i18n } = useTranslation();
   const { user } = useSelector((store) => store.auth);
   const { theme } = useSelector((store) => store.theme);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [openNav, setOpenNav] = useState(false);
-
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  // const user = false;
 
   const onChangeLang = (lang) => {
     i18n.changeLanguage(lang);
   };
-
-  const logoutHandler = async () => {
+  const logoutHandler = async (e) => {
     try {
-      const res = await axios.get(
-        `https://felblad-plateform.onrender.com/api/v1/user/logout`,
-        { withCredentials: true }
-      );
+      const res = await axios.get(`https://felblad-plateform.onrender.com/api/v1/user/logout`, {
+        withCredentials: true,
+      });
       if (res.data.success) {
         navigate("/");
         dispatch(setUser(null));
@@ -63,7 +28,7 @@ const Navbar = () => {
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.response?.data?.message || "Logout failed");
+      toast.error(error.response.data.message);
     }
   };
 
@@ -75,39 +40,42 @@ const Navbar = () => {
     }
   };
 
-  const toggleNav = () => setOpenNav(!openNav);
+  const toggleNav = () => {
+    setOpenNav(!openNav);
+  };
 
-  // Fix sélection auto de la langue
   useEffect(() => {
-    const elements = document.getElementsByClassName("lang");
-    for (let i = 0; i < elements.length; i++) {
-      const element = elements[i];
+    for (
+      let index = 0;
+      index < document.getElementsByClassName("lang").length;
+      index++
+    ) {
+      const element = document.getElementsByClassName("lang")[index];
       if (element.value === i18n.language) {
         element.setAttribute("selected", "true");
       }
     }
-  }, [i18n.language]);
-
+  }, []);
   return (
     <div className="py-2 fixed w-full dark:bg-gray-800 dark:border-b-gray-600 border-b-gray-300 border-2 bg-white z-50">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-4 md:px-0">
-        {/* Logo */}
+        {/* logo section */}
         <div className="flex gap-7 items-center">
-          <Link to="/" className="flex gap-2 items-center">
-            <img
-              src={Logo}
-              alt="Logo"
-              className="w-7 h-7 md:w-10 md:h-10 dark:invert"
-            />
-            <h1 className="font-bold text-3xl md:text-4xl">Kinvest</h1>
+          <Link to={"/"}>
+            <div className="flex gap-2 items-center">
+              <img
+                src={Logo}
+                alt=""
+                className="w-7 h-7 md:w-10 md:h-10 dark:invert"
+              />
+              <h1 className="font-bold text-3xl md:text-4xl">Kinvest</h1>
+            </div>
           </Link>
-
-          {/* Search bar */}
           <div className="relative hidden md:block">
             <Input
               type="text"
-              placeholder={t("menu.search")}
-              className="border border-gray-700 dark:bg-gray-900 bg-gray-300 w-[300px]"
+              placeholder="Search"
+              className="border border-gray-700 dark:bg-gray-900 bg-gray-300 w-[300px] hidden md:block"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -116,130 +84,113 @@ const Navbar = () => {
             </Button>
           </div>
         </div>
-
-        {/* Navigation */}
+        {/* nav section */}
         <nav className="flex md:gap-7 gap-4 items-center">
           <ul className="hidden md:flex gap-7 items-center text-xl font-semibold">
-            <NavLink to="/" className="cursor-pointer">
+            <NavLink to={"/"} className="cursor-pointer">
               <li>{t("menu.home")}</li>
             </NavLink>
-            <NavLink to="/blogs" className="cursor-pointer">
+            <NavLink to={"/blogs"} className={`cursor-pointer`}>
               <li>{t("menu.blogs")}</li>
             </NavLink>
-            <NavLink to="/about" className="cursor-pointer">
+            <NavLink to={"/about"} className={`cursor-pointer`}>
               <li>{t("menu.about")}</li>
             </NavLink>
+            {/* <NavLink to={'/write-blog'} className={`cursor-pointer`}><li>Write a Blog</li></NavLink> */}
           </ul>
 
-          {/* Right side */}
-          <div className="flex items-center gap-3">
-            {/* Theme toggle */}
-            <Button onClick={() => dispatch(toggleTheme())}>
+          <div className="flex">
+            <Button onClick={() => dispatch(toggleTheme())} className="">
               {theme === "light" ? <FaMoon /> : <FaSun />}
             </Button>
 
-            {/* Lang select */}
-            <Select onValueChange={onChangeLang} defaultValue={i18n.language}>
-              <SelectTrigger className="w-[60px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="en">EN</SelectItem>
-                <SelectItem value="fr">FR</SelectItem>
-                <SelectItem value="ar">AR</SelectItem>
-              </SelectContent>
-            </Select>
+            {/* i18n */}
+            <div className="flex">
+              <Select onValueChange={onChangeLang} defaultValue={i18n.language}>
+                <SelectTrigger className="w-[60px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">EN</SelectItem>
+                  <SelectItem value="fr">FR</SelectItem>
+                  <SelectItem value="ar">AR</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
-            {/* User menu */}
             {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Avatar>
-                    <AvatarImage src={user?.photoUrl || userLogo} />
-                    <AvatarFallback>U</AvatarFallback>
-                  </Avatar>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuLabel>
-                    {user?.firstName || "User"}
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem
-                      onClick={() => navigate("/dashboard/profile")}
-                    >
-                      <User className="mr-2 h-4 w-4" />
-                      <span>{t("Profile")}</span>
-                      <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() => navigate("/dashboard/your-blog")}
-                    >
-                      <ChartColumnBig className="mr-2 h-4 w-4" />
-                      <span>Your Blog</span>
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() => navigate("/dashboard/comments")}
-                    >
-                      <LiaCommentSolid className="mr-2 h-4 w-4" />
-                      <span>Comments</span>
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem
-                      onClick={() => navigate("/dashboard/write-blog")}
-                    >
-                      <FaRegEdit className="mr-2 h-4 w-4" />
-                      <span>Write Blog</span>
-                    </DropdownMenuItem>
-
-                    {user?.role === "admin" && (
-                      <DropdownMenuItem onClick={() => navigate("/admin")}>
-                        <Users className="mr-2 h-4 w-4" />
-                        <span>Admin Dashboard</span>
-                      </DropdownMenuItem>
-                    )}
-
-                    {user?.role === "professeur" && (
+              <div className="ml-7 flex gap-3 items-center">
+                {/* <Link to={'/profile'}> */}
+                <DropdownMenu className="">
+                  <DropdownMenuTrigger asChild>
+                    <Avatar className="cursor-pointer">
+                      <AvatarImage src={user.photoUrl || userLogo} />
+                      <AvatarFallback>CN</AvatarFallback>
+                    </Avatar>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 dark:bg-gray-800">
+                    <DropdownMenuLabel>{t("My Account")}</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuGroup>
                       <DropdownMenuItem
-                        onClick={() => navigate("/dashboard/write-course")}
+                        onClick={() => navigate("/dashboard/profile")}
                       >
-                        <FaEdit className="mr-2 h-4 w-4" />
-                        <span>Écrire un cours</span>
+                        <User />
+                        <span>{t("Profile")}</span>
+                        <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
                       </DropdownMenuItem>
-                    )}
-                  </DropdownMenuGroup>
-
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={logoutHandler}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>{t("menu.logout")}</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                      <DropdownMenuItem
+                        onClick={() => navigate("/dashboard/your-blog")}
+                      >
+                        <ChartColumnBig />
+                        <span>Your Blog</span>
+                        <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => navigate("/dashboard/comments")}
+                      >
+                        <LiaCommentSolid />
+                        <span>Comments</span>
+                        <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => navigate("/dashboard/write-blog")}
+                      >
+                        <FaRegEdit />
+                        <span>Write Blog</span>
+                        <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={logoutHandler}>
+                      <LogOut />
+                      <span>Log out</span>
+                      <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {/* </Link> */}
+                <Button className="hidden md:block" onClick={logoutHandler}>
+                  Logout
+                </Button>
+              </div>
             ) : (
-              <div className="ml-7 md:flex gap-2">
-                <Link to="/login">
-                  <Button>{t("menu.se connecter")}</Button>
+              <div className="ml-7 md:flex gap-2 ">
+                <Link to={"/login"}>
+                  <Button>{t("Se Connecter")}</Button>
                 </Link>
-                <Link to="/signup" className="hidden md:block">
-                  <Button>{t("menu.signup")}</Button>
+                <Link className="hidden md:block" to={"/signup"}>
+                  <Button>{t("Essayer Gratuitement")}</Button>
                 </Link>
               </div>
             )}
           </div>
-
-          {/* Responsive menu toggle */}
           {openNav ? (
             <HiMenuAlt3 onClick={toggleNav} className="w-7 h-7 md:hidden" />
           ) : (
             <HiMenuAlt1 onClick={toggleNav} className="w-7 h-7 md:hidden" />
           )}
         </nav>
-
-        {/* Mobile menu */}
         <ResponsiveMenu
           openNav={openNav}
           setOpenNav={setOpenNav}
