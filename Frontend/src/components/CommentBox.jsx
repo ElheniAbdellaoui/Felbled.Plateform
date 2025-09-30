@@ -143,8 +143,10 @@ const CommentBox = ({ selectedBlog }) => {
       {/* Comment Input */}
       <div className="flex gap-4 mb-4 items-center">
         <Avatar>
-          <AvatarImage src={user.photoUrl} />
-          <AvatarFallback>CN</AvatarFallback>
+          <AvatarImage
+            src={item?.userId?.photoUrl || "/placeholder-avatar.png"}
+          />
+          <AvatarFallback>{item?.userId?.firstName?.[0] || "U"}</AvatarFallback>
         </Avatar>
         <h3 className="font-semibold">
           {user.firstName} {user.lastName}
