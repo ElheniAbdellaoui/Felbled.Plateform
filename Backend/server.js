@@ -3,6 +3,7 @@ import connectDB from "./database/db.js";
 import useRoute from "./routes/user.route.js";
 import blogRoute from "./routes/blog.route.js";
 import commentRoute from "./routes/comment.route.js";
+import courseRoute from "./routes/course.route.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import path from "path";
@@ -29,6 +30,7 @@ const _dirname = path.resolve();
 app.use("/api/v1/user", useRoute);
 app.use("/api/v1/blog", blogRoute);
 app.use("/api/v1/comment", commentRoute);
+app.use("/api/v1/course", courseRoute);
 
 app.use(express.static(path.join(_dirname, "/Frontend/dist")));
 //  app.get("*", (_, res) => {

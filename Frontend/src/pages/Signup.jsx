@@ -27,7 +27,7 @@ const Signup = () => {
     lastName: "",
     email: "",
     password: "",
-    userRole: "User",
+    role: "User",
   });
 
   const handleChange = (e) => {
@@ -143,13 +143,13 @@ const Signup = () => {
               <div>
                 <Label>Role</Label>
                 <select
-                  name="userRole"
-                  value={user.userRole}
+                  name="role"
+                  value={user.role}
                   onChange={handleChange}
                   className="border rounded-md p-2 w-full"
                 >
-                  <option value="User">User</option>
-                  <option value="Professeur">Professeur</option>
+                  <option value="user">User</option>
+                  <option value="professeur">Professeur</option>
                 </select>
               </div>
               <Button type="submit" className="w-full">

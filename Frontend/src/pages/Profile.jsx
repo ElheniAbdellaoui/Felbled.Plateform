@@ -73,7 +73,7 @@ const Profile = () => {
     try {
       setLoading(true);
       const res = await axios.put(
-        `http://localhost:5173/api/v1/user/profile/update`,
+        `https://felblad-plateform.onrender.com/api/v1/user/profile/update`,
         formData,
         {
           headers: {

@@ -95,7 +95,7 @@ const CommentBox = ({ selectedBlog }) => {
       }
     } catch (error) {
       console.log(error);
-      toast.error("comment add nhi hua");
+      toast.error("comment add not empty");
     }
   };
 
@@ -118,7 +118,7 @@ const CommentBox = ({ selectedBlog }) => {
       }
     } catch (error) {
       console.log(error);
-      toast.error("comment delete nhi hua bhai");
+      toast.error("comment delete ");
     }
   };
 
