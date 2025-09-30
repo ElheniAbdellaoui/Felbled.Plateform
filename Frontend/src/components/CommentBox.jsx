@@ -5,6 +5,7 @@ import { FaHeart, FaRegHeart } from "react-icons/fa6";
 import { LuSend } from "react-icons/lu";
 import { Button } from "./ui/button";
 import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
 import { toast } from "sonner";
 import { setBlog } from "@/redux/blogSlice";
 import { setComment } from "@/redux/commentSlice";
@@ -17,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-const CommentBox = ({ selectedBlog, axiosInstance }) => {
+const CommentBox = ({ selectedBlog }) => {
   const { user } = useSelector((store) => store.auth);
   const { comment } = useSelector((store) => store.comment);
   const { blog } = useSelector((store) => store.blog);
@@ -29,49 +30,101 @@ const CommentBox = ({ selectedBlog, axiosInstance }) => {
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editedContent, setEditedContent] = useState("");
 
+  // ✅ Protection si selectedBlog est undefined
+  if (!selectedBlog || !selectedBlog._id) return <div>Loading comments...</div>;
+
+  const getAllCommentsOfBlog = async () => {
+    try {
+      const res = await axios.get(
+        `https://felblad-plateform.onrender.com/api/v1/comment/${selectedBlog._id}/comment/all`,
+        { withCredentials: true }
+      );
+      dispatch(setComment(res.data.comments));
+    } catch (error) {
+      console.error("Error fetching comments:", error);
+    }
+  };
+
   useEffect(() => {
-    const getAllCommentsOfBlog = async () => {
-      try {
-        const res = await axiosInstance.get(
-          `/comment/${selectedBlog._id}/comment/all`
-        );
-        dispatch(setComment(res.data.comments || []));
-      } catch (err) {
-        console.error(err);
-      }
-    };
     getAllCommentsOfBlog();
   }, [selectedBlog._id]);
 
   const commentHandler = async () => {
-    if (!content.trim()) return toast.error("Comment cannot be empty!");
+    if (!content.trim()) return toast.error("Comment cannot be empty");
+
     try {
-      const res = await axiosInstance.post(
-        `/comment/${selectedBlog._id}/create`,
-        { content }
+      const res = await axios.post(
+        `https://felblad-plateform.onrender.com/api/v1/comment/${selectedBlog._id}/create`,
+        { content },
+        { withCredentials: true }
       );
+
       if (res.data.success) {
-        const updatedCommentData = [...comment, res.data.comment];
-        dispatch(setComment(updatedCommentData));
+        const updatedComments = [...comment, res.data.comment];
+        dispatch(setComment(updatedComments));
 
         const updatedBlogData = blog.map((b) =>
-          b._id === selectedBlog._id
-            ? { ...b, comments: updatedCommentData }
-            : b
+          b._id === selectedBlog._id ? { ...b, comments: updatedComments } : b
         );
         dispatch(setBlog(updatedBlogData));
         toast.success(res.data.message);
         setContent("");
       }
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
       toast.error("Failed to add comment");
+    }
+  };
+
+  const deleteComment = async (commentId) => {
+    try {
+      const res = await axios.delete(
+        `https://felblad-plateform.onrender.com/api/v1/comment/${commentId}/delete`,
+        { withCredentials: true }
+      );
+      if (res.data.success) {
+        const updatedComments = comment.filter((c) => c._id !== commentId);
+        dispatch(setComment(updatedComments));
+        toast.success(res.data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to delete comment");
+    }
+  };
+
+  const editCommentHandler = async (commentId) => {
+    if (!editedContent.trim()) return toast.error("Comment cannot be empty");
+
+    try {
+      const res = await axios.put(
+        `https://felblad-plateform.onrender.com/api/v1/comment/${commentId}/edit`,
+        { content: editedContent },
+        { withCredentials: true }
+      );
+
+      if (res.data.success) {
+        const updatedComments = comment.map((c) =>
+          c._id === commentId ? { ...c, content: editedContent } : c
+        );
+        dispatch(setComment(updatedComments));
+        toast.success(res.data.message);
+        setEditingCommentId(null);
+        setEditedContent("");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to edit comment");
     }
   };
 
   const likeCommentHandler = async (commentId) => {
     try {
-      const res = await axiosInstance.get(`/comment/${commentId}/like`);
+      const res = await axios.get(
+        `https://felblad-plateform.onrender.com/api/v1/comment/${commentId}/like`,
+        { withCredentials: true }
+      );
+
       if (res.data.success) {
         const updatedCommentList = comment.map((c) =>
           c._id === commentId ? res.data.updatedComment : c
@@ -79,53 +132,15 @@ const CommentBox = ({ selectedBlog, axiosInstance }) => {
         dispatch(setComment(updatedCommentList));
         toast.success(res.data.message);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error("Error liking comment:", error);
       toast.error("Failed to like comment");
     }
   };
 
-  const deleteComment = async (commentId) => {
-    try {
-      const res = await axiosInstance.delete(`/comment/${commentId}/delete`);
-      if (res.data.success) {
-        const updatedCommentData = comment.filter((c) => c._id !== commentId);
-        dispatch(setComment(updatedCommentData));
-        toast.success(res.data.message);
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to delete comment");
-    }
-  };
-
-  const editCommentHandler = async (commentId) => {
-    try {
-      const res = await axiosInstance.put(`/comment/${commentId}/edit`, {
-        content: editedContent,
-      });
-      if (res.data.success) {
-        const updatedCommentData = comment.map((c) =>
-          c._id === commentId ? { ...c, content: editedContent } : c
-        );
-        dispatch(setComment(updatedCommentData));
-        toast.success(res.data.message);
-        setEditingCommentId(null);
-        setEditedContent("");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to edit comment");
-    }
-  };
-
-  const handleReplyClick = (commentId) => {
-    setActiveReplyId(activeReplyId === commentId ? null : commentId);
-    setReplyText("");
-  };
-
   return (
     <div>
+      {/* Comment Input */}
       <div className="flex gap-4 mb-4 items-center">
         <Avatar>
           <AvatarImage src={user.photoUrl} />
@@ -135,10 +150,10 @@ const CommentBox = ({ selectedBlog, axiosInstance }) => {
           {user.firstName} {user.lastName}
         </h3>
       </div>
-
       <div className="flex gap-3">
         <Textarea
           placeholder="Leave a comment"
+          className="bg-gray-100 dark:bg-gray-800"
           onChange={(e) => setContent(e.target.value)}
           value={content}
         />
@@ -147,6 +162,7 @@ const CommentBox = ({ selectedBlog, axiosInstance }) => {
         </Button>
       </div>
 
+      {/* Comments List */}
       {comment.length > 0 && (
         <div className="mt-7 bg-gray-100 dark:bg-gray-800 p-5 rounded-md">
           {comment.map((item) => (
@@ -168,6 +184,7 @@ const CommentBox = ({ selectedBlog, axiosInstance }) => {
                         <Textarea
                           value={editedContent}
                           onChange={(e) => setEditedContent(e.target.value)}
+                          className="mb-2 bg-gray-200 dark:bg-gray-700"
                         />
                         <div className="flex py-1 gap-2">
                           <Button
@@ -191,7 +208,7 @@ const CommentBox = ({ selectedBlog, axiosInstance }) => {
 
                     <div className="flex gap-5 items-center">
                       <div
-                        className="flex gap-1 items-center cursor-pointer"
+                        className="flex gap-2 items-center cursor-pointer"
                         onClick={() => likeCommentHandler(item._id)}
                       >
                         {item.likes.includes(user._id) ? (
@@ -202,7 +219,11 @@ const CommentBox = ({ selectedBlog, axiosInstance }) => {
                         <span>{item.numberOfLikes}</span>
                       </div>
                       <p
-                        onClick={() => handleReplyClick(item._id)}
+                        onClick={() =>
+                          setActiveReplyId(
+                            activeReplyId === item._id ? null : item._id
+                          )
+                        }
                         className="text-sm cursor-pointer"
                       >
                         Reply
@@ -236,10 +257,12 @@ const CommentBox = ({ selectedBlog, axiosInstance }) => {
                 )}
               </div>
 
+              {/* Reply Box */}
               {activeReplyId === item._id && (
                 <div className="flex gap-3 w-full px-10">
                   <Textarea
                     placeholder="Reply here ..."
+                    className="border-2 dark:border-gray-500 bg-gray-200 dark:bg-gray-700"
                     onChange={(e) => setReplyText(e.target.value)}
                     value={replyText}
                   />

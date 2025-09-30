@@ -10,15 +10,14 @@ import {
 import { Link, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Bookmark, MessageSquare, Share2 } from "lucide-react";
-import CommentBox from "@/components/CommentBox";
 import { FaHeart, FaRegHeart } from "react-icons/fa6";
+import CommentBox from "@/components/CommentBox";
+import axios from "axios";
 import { setBlog } from "@/redux/blogSlice";
 import { toast } from "sonner";
-import axios from "axios";
 
 const BlogView = () => {
   const params = useParams();
@@ -26,19 +25,11 @@ const BlogView = () => {
   const { blog } = useSelector((store) => store.blog);
   const { user } = useSelector((store) => store.auth);
   const selectedBlog = blog.find((b) => b._id === blogId);
-  const dispatch = useDispatch();
-
   const [blogLike, setBlogLike] = useState(selectedBlog?.likes?.length || 0);
   const [liked, setLiked] = useState(
     selectedBlog?.likes?.includes(user?._id) || false
   );
-
-  // Crée une instance Axios avec token pour éviter les 401
-  const axiosInstance = axios.create({
-    baseURL: "https://felblad-plateform.onrender.com/api/v1",
-    headers: { Authorization: `Bearer ${user?.token}` },
-    withCredentials: true,
-  });
+  const dispatch = useDispatch();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -60,29 +51,31 @@ const BlogView = () => {
   const likeOrDislikeHandler = async () => {
     try {
       const action = liked ? "dislike" : "like";
-      const res = await axiosInstance.get(
-        `/blog/${selectedBlog._id}/${action}`
+      const res = await axios.get(
+        `https://felblad-plateform.onrender.com/api/v1/blog/${selectedBlog._id}/${action}`,
+        { withCredentials: true }
       );
+
       if (res.data.success) {
         const updatedLikes = liked ? blogLike - 1 : blogLike + 1;
         setBlogLike(updatedLikes);
         setLiked(!liked);
 
-        const updatedBlogData = blog.map((b) =>
-          b._id === selectedBlog._id
+        const updatedBlogData = blog.map((p) =>
+          p._id === selectedBlog._id
             ? {
-                ...b,
+                ...p,
                 likes: liked
-                  ? b.likes.filter((id) => id !== user._id)
-                  : [...b.likes, user._id],
+                  ? p.likes.filter((id) => id !== user._id)
+                  : [...p.likes, user._id],
               }
-            : b
+            : p
         );
         dispatch(setBlog(updatedBlogData));
         toast.success(res.data.message);
       }
     } catch (error) {
-      console.error(error);
+      console.log(error);
       toast.error(error?.response?.data?.message || "An error occurred");
     }
   };
@@ -101,14 +94,16 @@ const BlogView = () => {
     if (navigator.share) {
       navigator
         .share({
-          title: "Check this blog!",
-          text: "Amazing read",
+          title: "Check out this blog!",
+          text: "Read this amazing blog post.",
           url: blogUrl,
         })
-        .catch((err) => console.error(err));
+        .then(() => console.log("Shared successfully"))
+        .catch((err) => console.error("Error sharing:", err));
     } else {
-      navigator.clipboard.writeText(blogUrl);
-      toast.success("Blog link copied to clipboard!");
+      navigator.clipboard.writeText(blogUrl).then(() => {
+        toast.success("Blog link copied to clipboard!");
+      });
     }
   };
 
@@ -119,15 +114,15 @@ const BlogView = () => {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/">Home</Link>
-              </BreadcrumbLink>
+              <Link to="/">
+                <BreadcrumbLink>Home</BreadcrumbLink>
+              </Link>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/blogs">Blogs</Link>
-              </BreadcrumbLink>
+              <Link to="/blogs">
+                <BreadcrumbLink>Blogs</BreadcrumbLink>
+              </Link>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -144,22 +139,24 @@ const BlogView = () => {
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center space-x-4">
               <Avatar>
-                <AvatarImage src={selectedBlog.author.photoUrl} />
+                <AvatarImage src={selectedBlog.author?.photoUrl} alt="Author" />
                 <AvatarFallback>
-                  {selectedBlog.author.firstName?.[0]}
+                  {selectedBlog.author?.firstName?.[0] || "U"}
                 </AvatarFallback>
               </Avatar>
               <div>
                 <p className="font-medium">
-                  {selectedBlog.author.firstName} {selectedBlog.author.lastName}
+                  {selectedBlog.author?.firstName}{" "}
+                  {selectedBlog.author?.lastName}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {selectedBlog.author.occupation || "Author"}
+                  {selectedBlog.author?.occupation || "Author"}
                 </p>
               </div>
             </div>
             <div className="text-sm text-muted-foreground">
-              Published on {changeTimeFormat(selectedBlog.createdAt)}
+              Published on {changeTimeFormat(selectedBlog.createdAt)} • 8 min
+              read
             </div>
           </div>
         </div>
@@ -168,9 +165,7 @@ const BlogView = () => {
         <div className="mb-8 rounded-lg overflow-hidden">
           <img
             src={selectedBlog.thumbnail || "/placeholder.jpg"}
-            alt={selectedBlog.title}
-            width={1000}
-            height={500}
+            alt={selectedBlog.title || "Blog thumbnail"}
             className="w-full object-cover"
           />
           <p className="text-sm text-muted-foreground mt-2 italic">
@@ -178,7 +173,9 @@ const BlogView = () => {
           </p>
         </div>
 
-        <p dangerouslySetInnerHTML={{ __html: selectedBlog.description }} />
+        <p
+          dangerouslySetInnerHTML={{ __html: selectedBlog.description || "" }}
+        />
 
         {/* Tags */}
         <div className="flex flex-wrap gap-2 mb-8">
@@ -230,7 +227,8 @@ const BlogView = () => {
           </div>
         </div>
 
-        <CommentBox selectedBlog={selectedBlog} axiosInstance={axiosInstance} />
+        {/* Comments */}
+        <CommentBox selectedBlog={selectedBlog} />
       </div>
     </div>
   );
