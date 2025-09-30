@@ -1,3 +1,53 @@
+import React, { useEffect, useState } from "react";
+import { Button } from "./ui/button";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Input } from "./ui/input";
+import Logo from "../assets/logo.png";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
+import axios from "axios";
+import { setUser } from "@/redux/authSlice";
+import userLogo from "../assets/user.jpg";
+import { HiMenuAlt1, HiMenuAlt3 } from "react-icons/hi";
+import {
+  ChartColumnBig,
+  Cloud,
+  CreditCard,
+  Github,
+  Keyboard,
+  LifeBuoy,
+  LogOut,
+  Mail,
+  MessageSquare,
+  Plus,
+  PlusCircle,
+  Search,
+  Settings,
+  User,
+  UserPlus,
+  Users,
+} from "lucide-react";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { FaEdit, FaMoon, FaRegEdit, FaSun } from "react-icons/fa";
+import { toggleTheme } from "@/redux/themeSlice";
+import { LiaCommentSolid } from "react-icons/lia";
+import ResponsiveMenu from "./ResponsiveMenu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
   SelectValue,
 } from "./ui/select";
 import i18n from "../i18n";
@@ -18,7 +68,7 @@ const Navbar = () => {
   };
   const logoutHandler = async (e) => {
     try {
-      const res = await axios.get(`https://felblad-plateform.onrender.com/api/v1/user/logout`, {
+      const res = await axios.get(`http://localhost:5173/api/v1/user/logout`, {
         withCredentials: true,
       });
       if (res.data.success) {
