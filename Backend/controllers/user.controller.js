@@ -9,13 +9,15 @@ import cloudinary from "cloudinary"; // Assurez-vous que cloudinary est bien con
 export const register = async (req, res) => {
   console.log("📦 Body reçu :", req.body);
   try {
-    const { firstName, lastName, email, password } = req.body;
+    const { firstName, lastName, email, password, role } = req.body; // ✅ Ajouter role
+
     if (!firstName || !lastName || !email || !password) {
       return res.status(400).json({
         success: false,
         message: "All fields are required",
       });
     }
+
     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
     if (!emailRegex.test(email)) {
@@ -24,12 +26,14 @@ export const register = async (req, res) => {
         message: "Invalid email",
       });
     }
+
     if (password.length < 6) {
       return res.status(400).json({
         success: false,
         message: "Password must be at least 6 characters",
       });
     }
+
     const existingUserByEmail = await User.findOne({ email: email });
     if (existingUserByEmail) {
       return res.status(400).json({
@@ -37,13 +41,22 @@ export const register = async (req, res) => {
         message: "Email already exists",
       });
     }
+
+    // ✅ Validation du rôle (optionnel mais recommandé)
+    const validRoles = ["user", "admin"];
+    const userRole = role && validRoles.includes(role) ? role : "user";
+
     const hashPassword = await bcrypt.hash(password, 10);
+
+    // ✅ Créer l'utilisateur avec le rôle
     await User.create({
       firstName,
       lastName,
       email,
       password: hashPassword,
+      role: userRole, // ✅ Ajouter le rôle
     });
+
     return res.status(201).json({
       success: true,
       message: "Account Created Successfully",
