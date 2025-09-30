@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Textarea } from "./ui/textarea";
 import { FaHeart, FaRegHeart } from "react-icons/fa6";
-// import { FaRegHeart, FaRegComment } from "react-icons/fa";
 import { LuSend } from "react-icons/lu";
 import { Button } from "./ui/button";
 import { useDispatch, useSelector } from "react-redux";
@@ -22,9 +21,9 @@ import {
 const CommentBox = ({ selectedBlog }) => {
   const { user } = useSelector((store) => store.auth);
   const { comment } = useSelector((store) => store.comment);
-  const [content, setContent] = useState("");
-  // const [replyComment, setReplyComment] = useState(false)
   const { blog } = useSelector((store) => store.blog);
+
+  const [content, setContent] = useState("");
   const [activeReplyId, setActiveReplyId] = useState(null);
   const [replyText, setReplyText] = useState("");
   const [editingCommentId, setEditingCommentId] = useState(null);
@@ -39,49 +38,43 @@ const CommentBox = ({ selectedBlog }) => {
 
   const changeEventHandler = (e) => {
     const inputText = e.target.value;
-    if (inputText.trim()) {
-      setContent(inputText);
-    } else setContent("");
+    setContent(inputText.trim() ? inputText : "");
   };
-
-  // console.log(selectedBlog);
 
   useEffect(() => {
     const getAllCommentsOfBlog = async () => {
+      if (!selectedBlog?._id) return;
       try {
         const res = await axios.get(
-          `https://felblad-plateform.onrender.com/api/v1/comment/${selectedBlog._id}/comment/all`
+          `https://felblad-plateform.onrender.com/api/v1/comment/${selectedBlog._id}/comment/all`,
+          { withCredentials: true }
         );
-        const data = res.data.comments;
+        const data = res.data.comments || [];
         dispatch(setComment(data));
       } catch (error) {
         console.log(error);
+        dispatch(setComment([]));
       }
     };
     getAllCommentsOfBlog();
-  }, []);
+  }, [selectedBlog?._id, dispatch]);
 
   const commentHandler = async () => {
+    if (!content.trim()) {
+      toast.error("Comment cannot be empty");
+      return;
+    }
     try {
       const res = await axios.post(
         `https://felblad-plateform.onrender.com/api/v1/comment/${selectedBlog._id}/create`,
         { content },
         {
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           withCredentials: true,
         }
       );
       if (res.data.success) {
-        let updatedCommentData;
-        console.log(comment);
-
-        if (comment.length >= 1) {
-          updatedCommentData = [...comment, res.data.comment];
-        } else {
-          updatedCommentData = [res.data.comment];
-        }
+        const updatedCommentData = [...(comment || []), res.data.comment];
         dispatch(setComment(updatedCommentData));
 
         const updatedBlogData = blog.map((p) =>
@@ -90,12 +83,13 @@ const CommentBox = ({ selectedBlog }) => {
             : p
         );
         dispatch(setBlog(updatedBlogData));
+
         toast.success(res.data.message);
         setContent("");
       }
     } catch (error) {
       console.log(error);
-      toast.error("comment add not empty");
+      toast.error("Failed to add comment");
     }
   };
 
@@ -103,40 +97,37 @@ const CommentBox = ({ selectedBlog }) => {
     try {
       const res = await axios.delete(
         `https://felblad-plateform.onrender.com/api/v1/comment/${commentId}/delete`,
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
       if (res.data.success) {
-        const updatedCommentData = comment.filter(
+        const updatedCommentData = (comment || []).filter(
           (item) => item._id !== commentId
         );
-        console.log(updatedCommentData);
-
         dispatch(setComment(updatedCommentData));
         toast.success(res.data.message);
       }
     } catch (error) {
       console.log(error);
-      toast.error("comment delete ");
+      toast.error("Failed to delete comment");
     }
   };
 
   const editCommentHandler = async (commentId) => {
+    if (!editedContent.trim()) {
+      toast.error("Edited content cannot be empty");
+      return;
+    }
     try {
       const res = await axios.put(
         `https://felblad-plateform.onrender.com/api/v1/comment/${commentId}/edit`,
         { content: editedContent },
         {
           withCredentials: true,
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
         }
       );
-
       if (res.data.success) {
-        const updatedCommentData = comment.map((item) =>
+        const updatedCommentData = (comment || []).map((item) =>
           item._id === commentId ? { ...item, content: editedContent } : item
         );
         dispatch(setComment(updatedCommentData));
@@ -154,18 +145,13 @@ const CommentBox = ({ selectedBlog }) => {
     try {
       const res = await axios.get(
         `https://felblad-plateform.onrender.com/api/v1/comment/${commentId}/like`,
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
-
       if (res.data.success) {
         const updatedComment = res.data.updatedComment;
-
-        const updatedCommentList = comment.map((item) =>
+        const updatedCommentList = (comment || []).map((item) =>
           item._id === commentId ? updatedComment : item
         );
-
         dispatch(setComment(updatedCommentList));
         toast.success(res.data.message);
       }
@@ -179,13 +165,14 @@ const CommentBox = ({ selectedBlog }) => {
     <div>
       <div className="flex gap-4 mb-4 items-center">
         <Avatar>
-          <AvatarImage src={user.photoUrl} />
+          <AvatarImage src={user?.photoUrl || ""} />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
         <h3 className="font-semibold">
-          {user.firstName} {user.lastName}
+          {user?.firstName ?? ""} {user?.lastName ?? ""}
         </h3>
       </div>
+
       <div className="flex gap-3">
         <Textarea
           placeholder="Leave a comment"
@@ -197,122 +184,113 @@ const CommentBox = ({ selectedBlog }) => {
           <LuSend />
         </Button>
       </div>
-      {comment.length > 0 ? (
+
+      {Array.isArray(comment) && comment.length > 0 && (
         <div className="mt-7 bg-gray-100 dark:bg-gray-800 p-5 rounded-md">
-          {comment.map((item, index) => {
-            return (
-              <div key={index} className="mb-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-3 items-start">
-                    <Avatar>
-                      <AvatarImage src={item?.userId?.photoUrl} />
-                      <AvatarFallback>CN</AvatarFallback>
-                    </Avatar>
-                    <div className="mb-2 space-y-1 md:w-[400px]">
-                      <h1 className="font-semibold">
-                        {item?.userId?.firstName} {item?.userId?.lastName}{" "}
-                        <span className="text-sm ml-2 font-light">
-                          yesterday
-                        </span>
-                      </h1>
-                      {editingCommentId === item?._id ? (
-                        <>
-                          <Textarea
-                            value={editedContent}
-                            onChange={(e) => setEditedContent(e.target.value)}
-                            className="mb-2 bg-gray-200 dark:bg-gray-700"
-                          />
-                          <div className="flex py-1 gap-2">
-                            <Button
-                              size="sm"
-                              onClick={() => editCommentHandler(item._id)}
-                            >
-                              Save
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => setEditingCommentId(null)}
-                            >
-                              Cancel
-                            </Button>
-                          </div>
-                        </>
-                      ) : (
-                        <p className="">{item?.content}</p>
-                      )}
-                      {/* <p className=''>{item.content}</p> */}
-                      <div className="flex gap-5 items-center">
-                        <div className="flex gap-2 items-center">
-                          <div
-                            className="flex gap-1 items-center cursor-pointer"
-                            onClick={() => likeCommentHandler(item._id)}
+          {comment.map((item, index) => (
+            <div key={index} className="mb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex gap-3 items-start">
+                  <Avatar>
+                    <AvatarImage src={item?.userId?.photoUrl || ""} />
+                    <AvatarFallback>CN</AvatarFallback>
+                  </Avatar>
+                  <div className="mb-2 space-y-1 md:w-[400px]">
+                    <h1 className="font-semibold">
+                      {item?.userId?.firstName ?? "Anon"}{" "}
+                      {item?.userId?.lastName ?? ""}{" "}
+                      <span className="text-sm ml-2 font-light">yesterday</span>
+                    </h1>
+                    {editingCommentId === item?._id ? (
+                      <>
+                        <Textarea
+                          value={editedContent}
+                          onChange={(e) => setEditedContent(e.target.value)}
+                          className="mb-2 bg-gray-200 dark:bg-gray-700"
+                        />
+                        <div className="flex py-1 gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => editCommentHandler(item._id)}
                           >
-                            {item.likes.includes(user._id) ? (
-                              <FaHeart fill="red" />
-                            ) : (
-                              <FaRegHeart />
-                            )}
-                            <span>{item.numberOfLikes}</span>
-                          </div>
+                            Save
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEditingCommentId(null)}
+                          >
+                            Cancel
+                          </Button>
                         </div>
-                        {/* <div className='flex gap-2 items-center'>
-                                                <FaRegComment /> <span>5</span>
-                                            </div> */}
-                        <p
-                          onClick={() => handleReplyClick(item._id)}
-                          className="text-sm cursor-pointer"
-                        >
-                          Reply
-                        </p>
+                      </>
+                    ) : (
+                      <p>{item?.content ?? ""}</p>
+                    )}
+                    <div className="flex gap-5 items-center">
+                      <div
+                        className="flex gap-1 items-center cursor-pointer"
+                        onClick={() => likeCommentHandler(item._id)}
+                      >
+                        {item?.likes?.includes(user?._id) ? (
+                          <FaHeart fill="red" />
+                        ) : (
+                          <FaRegHeart />
+                        )}
+                        <span>{item?.numberOfLikes ?? 0}</span>
                       </div>
+                      <p
+                        onClick={() => handleReplyClick(item._id)}
+                        className="text-sm cursor-pointer"
+                      >
+                        Reply
+                      </p>
                     </div>
                   </div>
-                  {/* <Button><Trash2/></Button> */}
-                  {user._id === item?.userId?._id ? (
-                    <DropdownMenu>
-                      <DropdownMenuTrigger>
-                        <BsThreeDots />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-[180px]">
-                        <DropdownMenuItem
-                          onClick={() => {
-                            setEditingCommentId(item._id);
-                            setEditedContent(item.content);
-                          }}
-                        >
-                          <Edit />
-                          Edit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-red-500"
-                          onClick={() => deleteComment(item._id)}
-                        >
-                          <Trash2 />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  ) : null}
                 </div>
-                {activeReplyId === item?._id && (
-                  <div className="flex gap-3 w-full px-10">
-                    <Textarea
-                      placeholder="Reply here ..."
-                      className="border-2 dark:border-gray-500 bg-gray-200 dark:bg-gray-700"
-                      onChange={(e) => setReplyText(e.target.value)}
-                      value={replyText}
-                    />
-                    <Button onClick={commentHandler}>
-                      <LuSend />
-                    </Button>
-                  </div>
+                {user?._id === item?.userId?._id && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger>
+                      <BsThreeDots />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-[180px]">
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setEditingCommentId(item._id);
+                          setEditedContent(item.content);
+                        }}
+                      >
+                        <Edit />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-red-500"
+                        onClick={() => deleteComment(item._id)}
+                      >
+                        <Trash2 />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
               </div>
-            );
-          })}
+              {activeReplyId === item?._id && (
+                <div className="flex gap-3 w-full px-10">
+                  <Textarea
+                    placeholder="Reply here ..."
+                    className="border-2 dark:border-gray-500 bg-gray-200 dark:bg-gray-700"
+                    onChange={(e) => setReplyText(e.target.value)}
+                    value={replyText}
+                  />
+                  <Button onClick={commentHandler}>
+                    <LuSend />
+                  </Button>
+                </div>
+              )}
+            </div>
+          ))}
         </div>
-      ) : null}
+      )}
     </div>
   );
 };
