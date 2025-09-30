@@ -1,7 +1,7 @@
 import { Blog } from "../models/blog.model";
 import User from "../models/user.model";
 
-// In your admin controller
+//  admin controller
 export const getStats = async (req, res) => {
   try {
     console.log("Stats endpoint hit");

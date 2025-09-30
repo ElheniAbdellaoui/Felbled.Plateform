@@ -9,11 +9,16 @@ import { isAuthenticated } from "../middleware/isAuthenticated.js";
 import { authorizeRoles } from "../middleware/authorizeRoles.js";
 
 const router = express.Router();
-router.post("/", isAuthenticated, authorizeRoles("professeur"), createCourse);
-router.get("/", getCourses);
-router.get("/:id", getCourse);
+router.post(
+  "/course",
+  isAuthenticated,
+  authorizeRoles("professeur"),
+  createCourse
+);
+router.get("/courses", getCourses);
+router.get("/course/:id", getCourse);
 router.delete(
-  "/:id",
+  "/course/:id",
   isAuthenticated,
   authorizeRoles("admin", "professeur"),
   deleteCourse
