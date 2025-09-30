@@ -154,43 +154,11 @@ export const updateProfile = async (req, res) => {
     } = req.body;
     const file = req.file;
 
-    // Vérification cruciale avant le traitement du fichier
-    if (file && !file.buffer) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid file format or missing file data",
-      });
-    }
-
-    let cloudResponse = null;
-    if (file) {
-      const fileUri = getDataUri(file);
-
-      // Vérification supplémentaire pour les données de fichier
-      if (!fileUri || !fileUri.startsWith("data:")) {
-        return res.status(400).json({
-          success: false,
-          message: "Failed to process file data",
-        });
-      }
-
-      // Upload vers Cloudinary avec gestion des erreurs
-      try {
-        cloudResponse = await cloudinary.uploader.upload(fileUri, {
-          resource_type: "auto",
-          folder: "user-profiles", // Ajoutez un dossier pour mieux organiser
-        });
-      } catch (uploadError) {
-        console.error("Cloudinary upload error:", uploadError);
-        return res.status(500).json({
-          success: false,
-          message: "File upload failed",
-          error: uploadError.message,
-        });
-      }
-    }
+    const fileUri = getDataUri(file);
+    let cloudResponse = await cloudinary.uploader.upload(fileUri);
 
     const user = await User.findById(userId).select("-password");
+
     if (!user) {
       return res.status(404).json({
         message: "User not found",
@@ -198,7 +166,7 @@ export const updateProfile = async (req, res) => {
       });
     }
 
-    // Mise à jour des données
+    // updating data
     if (firstName) user.firstName = firstName;
     if (lastName) user.lastName = lastName;
     if (occupation) user.occupation = occupation;
@@ -207,20 +175,19 @@ export const updateProfile = async (req, res) => {
     if (linkedin) user.linkedin = linkedin;
     if (github) user.github = github;
     if (bio) user.bio = bio;
-    if (cloudResponse) user.photoUrl = cloudResponse.secure_url;
+    if (file) user.photoUrl = cloudResponse.secure_url;
 
     await user.save();
     return res.status(200).json({
-      message: "Profile updated successfully",
+      message: "profile updated successfully",
       success: true,
       user,
     });
   } catch (error) {
-    console.error("Update profile error:", error);
+    console.log(error);
     return res.status(500).json({
       success: false,
       message: "Failed to update profile",
-      error: error.message, // Ajout du message d'erreur pour le débogage
     });
   }
 };
