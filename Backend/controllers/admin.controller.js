@@ -1,5 +1,5 @@
-import { Blog } from "../models/blog.model";
-import User from "../models/user.model";
+import { Blog } from "../models/blog.model.js";
+import { User } from "../models/user.model.js";
 
 //  admin controller
 export const getStats = async (req, res) => {
