@@ -187,6 +187,7 @@ const Navbar = () => {
                     <DropdownMenuGroup>
                       <DropdownMenuItem
                         onClick={() => navigate("/dashboard/profile")}
+                        className="profile-icon"
                       >
                         <User />
                         <span>{t("Profile")}</span>
