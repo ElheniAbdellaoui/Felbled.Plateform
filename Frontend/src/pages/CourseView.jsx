@@ -6,6 +6,7 @@ const CourseView = () => {
   const { id } = useParams();
   const [course, setCourse] = useState(null);
 
+  // 🔹 Récupérer un cours par son ID
   useEffect(() => {
     const fetchCourse = async () => {
       try {
@@ -14,7 +15,7 @@ const CourseView = () => {
         );
         setCourse(res.data);
       } catch (err) {
-        console.error(err);
+        console.error("Erreur GET BY ID :", err.response?.data || err);
       }
     };
     fetchCourse();
@@ -41,6 +42,7 @@ const CourseView = () => {
           Télécharger PDF
         </a>
       )}
+
       {course.videoUrl && (
         <div className="mt-6">
           <iframe
