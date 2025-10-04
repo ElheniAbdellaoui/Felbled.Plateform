@@ -43,7 +43,7 @@ export const register = async (req, res) => {
     }
 
     // ✅ Validation du rôle (optionnel mais recommandé)
-    const validRoles = ["user", "admin"];
+    const validRoles = ["user", "admin", "professeur"];
     const userRole = role && validRoles.includes(role) ? role : "user";
 
     const hashPassword = await bcrypt.hash(password, 10);

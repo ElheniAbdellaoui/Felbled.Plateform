@@ -27,7 +27,7 @@ const Signup = () => {
     lastName: "",
     email: "",
     password: "",
-    role: "User",
+    role: "user",
   });
 
   const handleChange = (e) => {
