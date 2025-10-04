@@ -5,6 +5,7 @@
   align-items: center;
   justify-content: space-between; /* espace entre gauche et droite */
   padding: 0 20px;
+  overflow: visible !important;
 }
 
 .navbar .profile-icon {
