@@ -28,7 +28,7 @@ app.use(
 
 const _dirname = path.resolve();
 // Routes
-app.use("/api/v1/stats", adminRoute);
+app.use("/api/v1/admin", adminRoute);
 app.use("/api/v1/user", useRoute);
 app.use("/api/v1/blog", blogRoute);
 app.use("/api/v1/comment", commentRoute);

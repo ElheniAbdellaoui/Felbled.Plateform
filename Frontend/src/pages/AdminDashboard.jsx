@@ -2,7 +2,12 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 
 const AdminDashboard = () => {
-  const [stats, setStats] = useState({ users: 0, blogs: 0, comments: 0 });
+  const [stats, setStats] = useState({
+    users: 0,
+    blogs: 0,
+    comments: 0,
+    courses: 0,
+  });
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -34,6 +39,10 @@ const AdminDashboard = () => {
         <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow">
           <h2 className="text-xl font-semibold">Commentaires</h2>
           <p className="text-3xl">{stats.comments}</p>
+        </div>
+        <div className="p-6 bg-white dark:bg-gray-800 rounded-xl shadow">
+          <h2 className="text-xl font-semibold">Courses</h2>
+          <p className="text-3xl">{stats.courses}</p>
         </div>
       </div>
     </div>
