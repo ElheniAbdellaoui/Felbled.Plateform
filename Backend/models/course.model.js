@@ -6,7 +6,7 @@ const courseSchema = new mongoose.Schema(
     description: String,
     level: {
       type: String,
-      enum: ["primaire", "college", "lycee"],
+      enum: ["primaire", "collège", "lycée"],
       required: true,
     },
     prof: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
