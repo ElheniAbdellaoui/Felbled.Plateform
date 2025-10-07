@@ -103,11 +103,25 @@ const router = createBrowserRouter([
       </>
     ),
     children: [
-      { path: "write-blog", element: <CreateBlog /> },
+      {
+        path: "write-blog",
+        element: (
+          <ProtectedRoute roles={["professeur", "admin"]}>
+            <CreateBlog />
+          </ProtectedRoute>
+        ),
+      },
       { path: "your-blog", element: <YourBlog /> },
       { path: "comments", element: <Comments /> },
       { path: "profile", element: <Profile /> },
-      { path: "write-blog/:blogId", element: <UpdateBlog /> },
+      {
+        path: "write-blog/:blogId",
+        element: (
+          <ProtectedRoute roles={["professeur", "admin"]}>
+            <UpdateBlog />
+          </ProtectedRoute>
+        ),
+      },
 
       // Cours → seulement professeur ou admin
       {
