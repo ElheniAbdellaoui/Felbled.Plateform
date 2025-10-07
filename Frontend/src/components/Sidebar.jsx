@@ -35,10 +35,12 @@ const Sidebar = () => {
           <span>Comments</span>
         </NavLink>
 
-        <NavLink to="/dashboard/write-blog" className={linkStyle}>
-          <FaRegEdit />
-          <span>Create Blog</span>
-        </NavLink>
+        {(user?.role === "professeur" || user?.role === "admin") && (
+          <NavLink to="/dashboard/write-blog" className={linkStyle}>
+            <FaRegEdit />
+            <span>Create Blog</span>
+          </NavLink>
+        )}
 
         {/* Visible seulement pour professeur OU admin */}
         {(user?.role === "professeur" || user?.role === "admin") && (
